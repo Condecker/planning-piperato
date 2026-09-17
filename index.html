@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planning Piperato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ECEAE0;--surface:#FBFAF5;--ink:#262B23;--ink-soft:#5C604F;
+    --olive:#586B43;--olive-pale:#E3E8D6;--brass:#A4762F;--brass-pale:#EFE5CE;
+    --clay:#A8503A;--line:#D8D4C5;
+    --display:'Fraunces',Georgia,serif;--body:'Hanken Grotesk',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;padding:clamp(16px,4vw,48px) clamp(13px,4vw,40px)}
+  .wrap{max-width:720px;margin:0 auto}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);font-weight:500}
+  h1{font-family:var(--display);font-weight:600;font-size:clamp(28px,6.5vw,44px);line-height:1.03;letter-spacing:-.015em;margin:10px 0 4px}
+  h1 em{font-style:italic;font-weight:400}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:18px}
+
+  .total{background:var(--ink);color:#F4EFE2;border-radius:16px;padding:20px 24px;position:sticky;top:8px;z-index:5;box-shadow:0 6px 24px rgba(38,43,35,.14)}
+  .total .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#C9C2AE}
+  .total .fig{font-family:var(--display);font-size:clamp(32px,8.5vw,48px);font-weight:600;letter-spacing:-.01em;line-height:1}
+  .total .meta{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:7px;font-family:var(--mono);font-size:11px;color:#C9C2AE}
+
+  .glab{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:20px 0 10px;display:flex;align-items:center;gap:10px}
+  .glab::after{content:"";flex:1;height:1px;background:var(--line)}
+  .field{margin-bottom:15px}
+  .flab{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .flab .v{font-family:var(--mono);color:var(--brass);font-weight:700;white-space:nowrap}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;transition:.12s;line-height:1.25;text-align:left}
+  .chip .x{display:block;font-family:var(--mono);font-size:10px;font-weight:400;color:var(--ink-soft);margin-top:1px}
+  .chip:hover{border-color:var(--brass)}
+  .chip.active{background:var(--olive);border-color:var(--olive);color:#fff}
+  .chip.active .x{color:#dfe7cf}
+  .incbadge{display:none;font-size:12.5px;font-weight:600;color:#3c4a2c;background:var(--olive-pale);border:1px solid #cdd6b6;border-radius:9px;padding:9px 13px;line-height:1.35}
+
+  input[type=range]{width:100%;accent-color:var(--brass);height:26px}
+  input[type=date],select{width:100%;font-family:var(--body);font-size:15px;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);-webkit-appearance:none;appearance:none}
+  select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%23A4762F' stroke-width='1.5' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 14px center}
+  .datebox{display:flex;flex-direction:column;gap:8px}
+  .nights{display:flex;flex-wrap:wrap;gap:7px;margin-top:2px}
+  .night{flex:1;min-width:90px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;text-align:center}
+  .night .d{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em}
+  .night .p{font-family:var(--display);font-size:17px;font-weight:600;margin-top:2px}
+  .night.na{border-color:var(--clay);background:#f6e7e2}
+  .night.na .p{color:var(--clay);font-size:13px}
+
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .preset{flex:1;min-width:110px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:11px 10px;border-radius:10px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:.15s}
+  .preset:hover{background:var(--ink);color:#F4EFE2}
+  .preset.rec{border-color:var(--brass);color:#6f5118}
+  .preset.rec:hover{background:var(--brass);color:#fff}
+  .pnote{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-bottom:6px}
+
+  .note{font-family:var(--mono);font-size:11px;color:var(--olive);margin-bottom:12px;line-height:1.5}
+  .note.warn{color:var(--clay)}
+
+  details.info{margin-top:7px;border-top:1px dotted var(--line);padding-top:6px}
+  details.info summary{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--brass);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px}
+  details.info summary::-webkit-details-marker{display:none}
+  details.info summary::before{content:"+";font-weight:700;font-size:13px}
+  details.info[open] summary::before{content:"–"}
+  details.info .body{font-size:12.5px;color:#3a3e31;margin-top:7px;line-height:1.55}
+  details.info .body b{color:var(--ink)}
+
+  .bd{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 18px 16px}
+  .bdrow{display:grid;grid-template-columns:1fr auto;gap:1px 14px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .bdrow:last-of-type{border:none}
+  .bdrow .l{font-weight:600;font-size:14px}
+  .bdrow .amt{font-family:var(--mono);font-weight:700;font-size:14px;white-space:nowrap}
+  .bdrow .d{grid-column:1/2;font-size:11.5px;color:var(--ink-soft);font-family:var(--mono)}
+  .bdrow.credit .l{color:#3c4a2c}.bdrow.credit .amt{color:var(--olive)}
+  .bdtotal{display:grid;grid-template-columns:1fr auto;gap:14px;padding:14px 0 4px;font-family:var(--display);font-size:18px;font-weight:600}
+  .bdtotal .amt{font-family:var(--mono);color:var(--brass)}
+
+  .vrow{margin-bottom:13px}.vrow .flab .v{color:var(--ink)}
+  .vtot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-family:var(--display);font-size:16px;font-weight:600}
+  .vtot .amt{font-family:var(--mono);color:var(--brass)}
+
+  .grand{background:linear-gradient(135deg,#4A5A38,#586B43);color:#F6F3E8;border-radius:18px;padding:24px;margin-top:18px;box-shadow:0 8px 28px rgba(58,70,41,.22)}
+  .grand .lab{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#D8E0C5}
+  .grand .fig{font-family:var(--display);font-size:clamp(38px,10vw,60px);font-weight:600;line-height:1;letter-spacing:-.01em;margin-top:4px}
+  .grand .split{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:12px;font-family:var(--mono);font-size:12px;color:#E4E9D6}
+  .grand .split b{color:#fff;font-weight:700}
+
+  footer{margin-top:22px;border-top:1px solid var(--line);padding-top:13px;font-size:11.5px;color:var(--ink-soft);font-family:var(--mono);line-height:1.6}
+
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 16px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:5px}
+  .tab{flex:1 1 auto;min-width:70px;text-align:center;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;padding:12px 8px;border-radius:9px;cursor:pointer;border:none;background:transparent;color:var(--ink-soft);transition:.15s}
+  .tab.active{background:var(--ink);color:#F4EFE2}
+  .tabpane{display:none}.tabpane.show{display:block}
+  .psum{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 15px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);line-height:1.7;margin-bottom:14px}
+  .psum b{color:var(--brass);font-weight:700}
+  .addrow{display:flex;gap:8px;margin-bottom:14px}
+  .addrow input{flex:1;font-family:var(--body);font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink)}
+  .btn,#addguest{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:10px 14px;border-radius:9px;border:1.5px solid var(--ink);background:var(--ink);color:#F4EFE2;cursor:pointer;white-space:nowrap}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .applybtn{width:100%;margin-bottom:14px;font-family:var(--mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:11px;border-radius:9px;border:1.5px solid var(--brass);background:var(--brass-pale);color:#6f5118;cursor:pointer}
+  .guest{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:8px}
+  .gtop{display:flex;align-items:center;gap:8px}
+  .gnum{font-family:var(--mono);font-size:11px;color:var(--ink-soft);min-width:22px}
+  .gname{flex:1;font-family:var(--body);font-size:15px;font-weight:600;border:none;background:transparent;color:var(--ink);padding:3px 5px;border-radius:6px;min-width:0}
+  .gname:focus{outline:1px solid var(--brass);background:#fff}
+  .grm{font-family:var(--mono);font-size:11px;color:var(--ink-soft);padding:3px 8px;border-radius:6px;background:var(--bg);white-space:nowrap}
+  .grm.has{color:#6f5118;background:var(--brass-pale)}
+  .gx,.rx{border:none;background:transparent;color:var(--ink-soft);font-size:19px;line-height:1;cursor:pointer;padding:2px 4px}
+  .gtags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+  .statuswrap{display:flex;gap:4px}
+  .mini{font-size:11px;font-weight:600;padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink-soft)}
+  .mini.on-yes{background:var(--olive);border-color:var(--olive);color:#fff}
+  .mini.on-maybe{background:var(--brass);border-color:var(--brass);color:#fff}
+  .mini.on-no{background:#b0aa9a;border-color:#b0aa9a;color:#fff}
+  .mini.tag{margin-left:2px}.mini.tag.on{background:var(--ink);border-color:var(--ink);color:#F4EFE2}
+  .room{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .room.over{border-color:var(--clay)}
+  .rtop{display:flex;align-items:center;gap:8px}
+  .rname{flex:1;font-family:var(--display);font-size:16px;font-weight:600;border:none;background:transparent;color:var(--ink);padding:2px 5px;border-radius:6px;min-width:0}
+  .rname:focus{outline:1px solid var(--brass);background:#fff}
+  .cap{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;font-weight:700}
+  .cap button{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;font-size:15px;cursor:pointer;color:var(--ink)}
+  .roccupants{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+  .occ{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;background:var(--olive-pale);border:1px solid #cdd6b6;border-radius:8px;padding:5px 8px}
+  .occ button{border:none;background:transparent;cursor:pointer;color:#3c4a2c;font-size:14px;line-height:1;padding:0}
+  .empty{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+  .rfeat{font-family:var(--mono);font-size:11px;color:var(--brass);margin-top:5px;line-height:1.4}
+  .radd{width:100%;margin-top:2px}
+  .rfoot{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:8px}
+  .rfoot .warn{color:var(--clay);font-weight:700}
+  .vgroup{margin-bottom:18px}
+  .vcat{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);font-weight:700;margin-bottom:8px}
+  .vcard{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:8px}
+  .vname{font-family:var(--display);font-size:16px;font-weight:600}
+  .vcontact{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin:4px 0 9px;line-height:1.6;word-break:break-word}
+  .vstatus{display:flex;gap:5px;margin-bottom:9px}
+  .mini.on-vmaybe{background:#b0aa9a;border-color:#b0aa9a;color:#fff}
+  .mini.on-vcontact{background:var(--brass);border-color:var(--brass);color:#fff}
+  .mini.on-vbook{background:var(--olive);border-color:var(--olive);color:#fff}
+  .vnotes{width:100%;min-height:50px;font-family:var(--body);font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);resize:vertical}
+  .vnotes:focus{outline:1px solid var(--brass)}
+  .gextra{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .gextra input{flex:1 1 45%;min-width:120px;font-size:12.5px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  .gextra input:focus{outline:1px solid var(--brass)}
+  .unassigned{background:var(--brass-pale);border:1px solid #e2cfa3;border-radius:11px;padding:12px 14px;margin-bottom:12px}
+  .unassigned h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#6f5118;margin-bottom:8px}
+  .uchip{display:inline-block;font-size:12.5px;font-weight:600;background:#fff;border:1px solid #e2cfa3;border-radius:8px;padding:5px 9px;margin:3px 4px 0 0}
+  .uchip.maybe{opacity:.65}
+  .exportbox{width:100%;min-height:130px;font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);white-space:pre;overflow:auto;margin-top:8px}
+  .task{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:7px}
+  .task.done{opacity:.5}
+  .task.overdue{border-color:var(--clay)}
+  .tcheck{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);background:#fff;cursor:pointer;flex:0 0 auto;margin-top:1px;font-size:13px;line-height:20px;color:#fff;text-align:center;padding:0}
+  .task.done .tcheck{background:var(--olive);border-color:var(--olive)}
+  .tbody{flex:1;min-width:0}
+
+  /* ─── Auth gate ─── */
+  #authgate{position:fixed;inset:0;background:rgba(38,43,35,.72);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+  #authgate .card{background:var(--surface);border-radius:16px;padding:28px 26px;max-width:340px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+  #authgate .kicker{margin-bottom:6px}
+  #authgate h2{font-family:var(--display);font-weight:600;font-size:26px;line-height:1.1;margin:0 0 4px}
+  #authgate p{font-size:13px;color:var(--ink-soft);margin-bottom:18px}
+  #authgate label{display:block;font-size:11px;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:12px 0 5px}
+  #authgate input{width:100%;font-family:var(--body);font-size:15px;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+  #authgate button{margin-top:16px;width:100%;font-family:var(--body);font-size:14px;font-weight:600;padding:12px;border:none;border-radius:9px;background:var(--olive);color:#fff;cursor:pointer}
+  #authgate button:hover{background:#4a5a37}
+  #autherr{color:var(--clay);font-size:12.5px;min-height:16px;margin-top:8px}
+  #signout{position:fixed;top:14px;right:14px;z-index:50;display:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+  #signout:hover{color:var(--ink);border-color:var(--brass)}
+  .ttext{font-size:14px;font-weight:600}
+  .task.done .ttext{text-decoration:line-through}
+  .tdue{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:2px}
+  .task.overdue .tdue{color:var(--clay);font-weight:700}
+  .tdel{border:none;background:transparent;color:var(--ink-soft);font-size:17px;cursor:pointer;padding:0 2px;flex:0 0 auto}
+  .payline{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:7px}
+  .payline.paid{background:var(--olive-pale);border-color:#cdd6b6}
+  .paychk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);background:#fff;cursor:pointer;flex:0 0 auto;color:#fff;font-size:13px;line-height:20px;text-align:center;padding:0}
+  .payline.paid .paychk{background:var(--olive);border-color:var(--olive)}
+  .payinfo{flex:1;min-width:0}
+  .payname{font-size:14px;font-weight:600}
+  .paywhen{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:2px}
+  .payamt{font-family:var(--mono);font-weight:700;font-size:14px;white-space:nowrap}
+  .paytot{display:flex;justify-content:space-between;font-family:var(--display);font-size:16px;font-weight:600;padding:12px 4px 2px}
+  .paytot .amt{font-family:var(--mono);color:var(--brass)}
+  .tday{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .tdayhead input{font-family:var(--display);font-size:17px;font-weight:600;border:none;background:transparent;width:100%;color:var(--ink);margin-bottom:9px;padding:2px 3px;border-radius:6px}
+  .tdayhead input:focus{outline:1px solid var(--brass)}
+  .titem{display:flex;gap:7px;align-items:center;margin-bottom:6px}
+  .titem input.ttime{width:96px;flex:0 0 auto;font-family:var(--mono);font-size:12px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  .titem input.tact{flex:1;min-width:0;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  .titem input:focus{outline:1px solid var(--brass)}
+  .titem button{border:none;background:transparent;color:var(--ink-soft);font-size:16px;cursor:pointer;flex:0 0 auto}
+  .tadd{font-family:var(--mono);font-size:11px;color:var(--brass);background:none;border:none;cursor:pointer;padding:5px 0;font-weight:700}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div id="authgate">
+  <div class="card">
+    <div class="kicker">Planning Piperato</div>
+    <h2>Sign in</h2>
+    <p>Private planning tool for Claudia &amp; Brian.</p>
+    <form id="authform" autocomplete="on">
+      <label for="authemail">Email</label>
+      <input id="authemail" name="email" type="email" required autocomplete="email">
+      <label for="authpw">Password</label>
+      <input id="authpw" name="password" type="password" required autocomplete="current-password">
+      <div id="autherr"></div>
+      <button type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
+<button id="signout" title="Sign out">sign out</button>
+
+<div class="wrap">
+
+  <div class="kicker">Amastuola · Puglia · our venue ♥</div>
+  <h1>Our wedding at <em>Amastuola.</em></h1>
+  <p class="sub">Budget, guests, rooms &amp; vendors — your wedding planning HQ. 2028 pricing. Edits save automatically.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="budget">Budget</button>
+    <button class="tab" data-tab="guests">Guests</button>
+    <button class="tab" data-tab="rooms">Rooms</button>
+    <button class="tab" data-tab="vendors">Vendors</button>
+    <button class="tab" data-tab="plan">Plan</button>
+  </div>
+
+  <div class="tabpane show" id="pane-budget">
+
+  <div class="total">
+    <div class="lab">Venue-side cost</div>
+    <div class="fig" id="total">—</div>
+    <div class="meta"><span id="perguest">—</span><span>vendors &amp; all-in below ↓</span></div>
+  </div>
+
+  <div class="glab" style="margin-top:18px">Presets</div>
+  <div class="presets">
+    <button class="preset rec" data-preset="rec">Claude's pick</button>
+    <button class="preset" data-preset="cheap">Cheapest</button>
+    <button class="preset" data-preset="splurge">Splurge</button>
+  </div>
+  <div class="pnote">Presets set the options below — they leave your date, guest count and vendor sliders alone.</div>
+
+  <div class="glab">Your dates</div>
+  <div class="field">
+    <div class="flab"><span>Check-in — first of 3 nights</span></div>
+    <div class="datebox">
+      <input type="date" id="checkin" min="2028-04-01" max="2028-11-28" value="2028-06-09">
+      <div class="nights" id="nights"></div>
+    </div>
+    <div id="daterange" class="note"></div>
+    <details class="info"><summary>how room pricing works</summary><div class="body">These are Amastuola's <b>2028 nightly room-exclusivity rates</b> from their availability sheet — they vary by date (weekends and peak weeks cost more). Your welcome night, wedding night and farewell make a <b>3-night block</b>; the calculator sums those three nights. Weekend nights (Fri/Sat/Sun) run higher than weeknights. Availability itself should be confirmed with the venue.</div></details>
+  </div>
+
+  <div class="glab">The essentials</div>
+  <div class="field">
+    <div class="flab"><span>Guest count</span><span class="v" id="guestval">60</span></div>
+    <input type="range" id="guests" min="30" max="130" step="2" value="60">
+  </div>
+  <div class="field">
+    <div class="flab"><span>Reception menu</span></div>
+    <div class="chips" data-group="menu">
+      <button class="chip" data-value="calaprice">Calaprice<span class="x">lightest</span></button>
+      <button class="chip" data-value="ondarosa">Ondarosa<span class="x">full 4-course</span></button>
+      <button class="chip" data-value="centosassi">Centosassi<span class="x">showpiece</span></button>
+    </div>
+    <div class="note" style="margin-top:6px;margin-bottom:2px">Contract minimum guaranteed: <b>70 adults</b> — Centosassi &euro;235pp, Ondarosa &euro;205pp, Calaprice &euro;190pp. You pay for 70 covers even if fewer attend; extra guests bill at the same rate.</div>
+      <details class="info"><summary>what's in each menu</summary><div class="body"><b>Calaprice</b> — bakery + cured-meat aperitif; starter, first, meat main, cake; wine by the bottle.<br><b>Ondarosa</b> — adds a seafood corner + a plated dessert.<br><b>Centosassi</b> — live mozzarella corner, panzerotto &amp; tempura, seafood, spritz corner, unlimited wine, beer &amp; soft drinks. Per-head drops the more covers you guarantee; the calculator auto-picks the cheaper bracket.</div></details>
+  </div>
+
+  <div class="glab">The party</div>
+  <div class="field">
+    <div class="flab"><span>Evening bar</span></div>
+    <select id="abar">
+      <option value="none">No open bar — dinner wine only</option>
+      <option value="bw1">Beer &amp; wine · 1h — €1,100</option><option value="bw2">Beer &amp; wine · 2h — €1,650</option>
+      <option value="bw3">Beer &amp; wine · 3h — €2,150</option><option value="bw4">Beer &amp; wine · 4h — €2,800</option>
+      <option value="ck1">Cocktails &amp; more · 1h — €2,000</option><option value="ck2">Cocktails &amp; more · 2h — €2,850</option>
+      <option value="ck3">Cocktails &amp; more · 3h — €3,600</option><option value="ck4" selected>Cocktails &amp; more · 4h — €4,800</option>
+      <option value="cb100">Cocktail bar · 100 drinks — €1,100</option><option value="cb250">Cocktail bar · 250 drinks — €2,200</option><option value="cb350">Cocktail bar · 350 drinks — €2,900</option>
+    </select>
+    <details class="info"><summary>how the bars work</summary><div class="body"><b>Open bars</b> are unlimited for the chosen hours, priced for up to 80 guests; over 80 is billed per extra head. <b>Cocktail bars</b> are sold by drink count regardless of headcount.</div></details>
+  </div>
+  <div class="field">
+    <div class="flab"><span>Late-party extension</span></div>
+    <div class="chips" data-group="ext">
+      <button class="chip" data-value="0">None<span class="x">8h, to ~1am</span></button>
+      <button class="chip" data-value="1">+1 hour<span class="x">€500</span></button>
+      <button class="chip" data-value="2">+2 hours<span class="x">to ~3am</span></button>
+    </div>
+    <details class="info"><summary>about the curfew</summary><div class="body">Your package runs <b>8 hours</b> from the welcome drinks. Extra time is <b>€500/hour</b> if agreed in advance, €700/hour on the day. (Confirm the latest end time in writing.)</div></details>
+  </div>
+
+  <div class="glab">Food &amp; drink extras</div>
+  <div id="centonote" class="note" style="display:none">✓ The cheesemaker, panzerotto &amp; spritz corners are already included in Centosassi.</div>
+  <div class="field"><div class="flab"><span>Live cheesemaker corner</span></div>
+    <div class="chips" data-group="cheese"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€15pp</span></button></div>
+    <div class="incbadge" id="badge-cheese">✓ Included with Centosassi — no extra charge</div></div>
+  <div class="field"><div class="flab"><span>Fried panzerotto &amp; tempura</span></div>
+    <div class="chips" data-group="panzerotto"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€12pp</span></button></div>
+    <div class="incbadge" id="badge-panzerotto">✓ Included with Centosassi — no extra charge</div></div>
+  <div class="field"><div class="flab"><span>Aperol spritz corner</span></div>
+    <div class="chips" data-group="spritz"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€900 ≤80</span></button></div>
+    <div class="incbadge" id="badge-spritz">✓ Included with Centosassi — no extra charge</div></div>
+  <div class="field"><div class="flab"><span>Raw seafood corner</span></div>
+    <div class="chips" data-group="rawsea"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€1,000 / 50ppl</span></button></div></div>
+
+  <div class="glab">Sweet &amp; fun extras</div>
+  <div class="field"><div class="flab"><span>Dessert &amp; fruit buffet</span></div>
+    <div class="chips" data-group="dessert"><button class="chip" data-value="off">No<span class="x">cake incl.</span></button><button class="chip" data-value="on">Add<span class="x">€15pp</span></button></div></div>
+  <div class="field"><div class="flab"><span>Ice cream cart · 4 flavors</span></div>
+    <div class="chips" data-group="icecream"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€500 ≤80</span></button></div></div>
+  <div class="field"><div class="flab"><span>Rum, cigars &amp; chocolate corner</span></div>
+    <div class="chips" data-group="rum"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€600 ≤80</span></button></div></div>
+  <div class="field"><div class="flab"><span>Prosecco tower</span></div>
+    <div class="chips" data-group="prosecco"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€300</span></button></div></div>
+  <div class="field"><div class="flab"><span>Fireworks show (1m30s)</span></div>
+    <div class="chips" data-group="fireworks"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€400</span></button></div></div>
+  <div class="field"><div class="flab"><span>Children (kids menu)</span><span class="v" id="kidsval">0 kids</span></div>
+    <input type="range" id="kids" min="0" max="20" step="1" value="0"></div>
+
+  <div class="glab">The weekend</div>
+  <div class="field"><div class="flab"><span>Welcome night (night 1)</span></div>
+    <div class="chips" data-group="welcome">
+      <button class="chip" data-value="none">Skip<span class="x">€0</span></button>
+      <button class="chip" data-value="pizza">Pizza party<span class="x">~€60pp</span></button>
+      <button class="chip" data-value="buffet">Apulian buffet<span class="x">~€75pp</span></button>
+      <button class="chip" data-value="winedinner">Wine dinner<span class="x">~€95pp</span></button>
+    </div></div>
+  <div class="field"><div class="flab"><span>Farewell brunch (night 3)</span></div>
+    <div class="chips" data-group="brunch"><button class="chip" data-value="off">Skip<span class="x">€0</span></button><button class="chip" data-value="on">BBQ brunch<span class="x">~€50pp</span></button></div></div>
+  <div class="field"><div class="flab"><span>Ceremony</span></div>
+    <div class="chips" data-group="ceremony">
+      <button class="chip" data-value="symbolic">Symbolic<span class="x">on-site</span></button>
+      <button class="chip" data-value="civil">Civil<span class="x">+ paperwork</span></button>
+      <button class="chip" data-value="catholic">Catholic<span class="x">off-site church</span></button>
+    </div></div>
+  <div class="field"><div class="flab"><span>Olive-grove ceremony setting</span></div>
+    <div class="chips" data-group="olive"><button class="chip" data-value="off">No<span class="x">use the lawn</span></button><button class="chip" data-value="on">Yes<span class="x">+€500</span></button></div></div>
+
+  <div class="glab">Who pays for rooms</div>
+  <div class="field"><div class="flab"><span>Guests pay toward their room</span></div>
+    <div class="chips" data-group="contrib">
+      <button class="chip" data-value="0">You cover it<span class="x">€0</span></button>
+      <button class="chip" data-value="100">€100 pp/night<span class="x">guests pay</span></button>
+      <button class="chip" data-value="150">€150 pp/night<span class="x">guests pay</span></button>
+      <button class="chip" data-value="full">Full price<span class="x">split real cost</span></button>
+    </div>
+    <div id="contribpp" class="note"></div>
+    <details class="info"><summary>how the offset works</summary><div class="body"><b>Confirmed by Amastuola:</b> guests book &amp; pay their own rooms via a secure card link, and it’s deducted from your package. This now reads your <b>actual room plan</b> — who you’ve placed and how many extra beds (€50/night each). <b>€100 / €150</b> are flat nightly rates per guest; <b>Full price</b> splits the real room cost across your staying guests so your room bill drops to €0. Change assignments on the Rooms tab and this updates live. Off-site guests pay their own hotels.</div></details></div>
+
+  <div class="glab">Where it goes</div>
+  <div class="bd" id="breakdown"></div>
+
+  <div class="glab">Outside vendor budgets · drag as quotes arrive</div>
+  <div id="vendors"></div>
+  <div class="vtot"><span>Outside vendors subtotal</span><span class="amt" id="vendortotal">—</span></div>
+
+  <div class="grand">
+    <div class="lab">All-in · Amastuola + outside vendors</div>
+    <div class="fig" id="grandtotal">—</div>
+    <div class="split"><span>Venue <b id="g-venue">—</b></span><span>Vendors <b id="g-vend">—</b></span><span><b id="grandper">—</b> / guest</span></div>
+  </div>
+
+  <details class="info" style="border-top:none;margin-top:14px"><summary>booking &amp; payment terms</summary><div class="body"><b>&euro;5,000 deposit</b> at booking. <b>Room exclusivity</b> due 1 month before (payable by you or directly by your guests). <b>Reception &amp; events</b> due 2 weeks before. <b>Extras</b> settled at check-out. <b>Final guest numbers</b> due 15 days before. All prices VAT-included. SIAE music licence is mandatory on the wedding day; ceremony chairs are covered by the &euro;10pp ceremony package (wooden cross chairs + welcome flavored waters).</div></details>
+
+  <footer id="foot"></footer>
+  </div>
+
+  <div class="tabpane" id="pane-guests">
+    <div class="glab" style="margin-top:8px">Guest list</div>
+    <div class="psum" id="gsum"></div>
+    <button class="applybtn" id="applybtn">Use likely count in budget &rarr;</button>
+    <div class="addrow"><input id="newguest" placeholder="Add a guest…"><button id="addguest">Add</button></div>
+    <div id="guestlist"></div>
+    <div class="note" style="margin-top:10px">Tap a name to rename. Room numbers come from the Rooms tab. Everything here saves automatically.</div>
+  </div>
+
+  <div class="tabpane" id="pane-rooms">
+    <div class="glab" style="margin-top:8px">Room assignments</div>
+    <div class="psum" id="rsum"></div>
+    <details class="info" style="border-top:none;margin:0 0 12px"><summary>the full room breakdown from Amastuola</summary><div class="body"><b>6 Deluxe</b> (ground floor, max 2): 102, 103, 104, 105, 106, 109 &mdash; 102 &amp; 109 hold 3; twin-bed option on 103, 106, 109.<br><br><b>8 Exclusive</b> (first floor, max 3): 201, 202, 203, 205, 206, 207, 208, 209 &mdash; 202 holds 2 only; twin option on 203, 206, 208; balcony on 205, 206, 207, 208, 209.<br><br><b>Suites:</b> 108 Suite Superior (max 5, two separate rooms) &middot; 107 Suite Deluxe (max 3, Jacuzzi) &middot; 101 Ovile Suite (max 2, Jacuzzi) &middot; 204 Padronale Suite (max 2, bathtub &amp; private terrace).<br><br>All ground floor except the Exclusives &amp; 204. A baby cot can be added to any category. Total max on-site works out to <b>49</b> across all rooms. Note: the 2028 brochure states <b>36 base beds + 7 extra = 43</b>, so the practical max may be 43 if only 7 extra beds are available — confirm the true maximum with the venue. Baby cots can be added on top.</div></details>
+    <div class="addrow"><button class="btn" id="addroom">+ Add room</button><button class="btn ghost" id="autofill">Auto-fill likely</button></div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Amastuola’s 18 rooms sleep up to 49 on-site. Max occupancy is set per room (see each card). A baby cot can be added to any room. Assign guests below; their room shows on the Guests tab.</div>
+    <div class="note" style="margin-top:-4px;margin-bottom:12px">Overflow guests — nearby stays Walter recommends: <b>B&amp;B Nacorè</b> (his own property), <b>B&amp;B Essenza</b>, <b>B&amp;B Sotto la volta</b>.</div>
+    <div id="unassigned" class="unassigned"></div>
+    <div id="roomlist"></div>
+    <div class="glab">Rooming list for Amastuola</div>
+    <div class="note" style="margin-top:0;margin-bottom:10px">Only guests with a room are included — unassigned guests are left out. Add guest emails on the Guests tab. Cost per guest = your contribution rate × 3 nights.</div>
+    <button class="btn" id="copyexport">Copy rooming list</button>
+    <textarea class="exportbox" id="exportbox" readonly></textarea>
+  </div>
+
+  <div class="tabpane" id="pane-vendors">
+    <div class="glab" style="margin-top:8px">Recommended vendors</div>
+    <div class="psum" id="vsum"></div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Amastuola’s recommended suppliers. Set a status and jot notes as you reach out — everything saves automatically.</div>
+    <div id="vendorbook"></div>
+  </div>
+
+  <div class="tabpane" id="pane-plan">
+    <div class="glab" style="margin-top:8px">Countdown checklist</div>
+    <div class="psum" id="cksum"></div>
+    <div class="addrow"><input id="newtask" placeholder="Add a to-do…"></div>
+    <div class="addrow"><input type="date" id="newtaskdate" min="2026-01-01" max="2028-12-31"><button id="addtask">Add task</button></div>
+    <div id="checklist"></div>
+
+    <div class="glab">Payments</div>
+    <div id="payments"></div>
+
+    <div class="glab">Weekend timeline</div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Your three days at Amastuola. Edit times and details, add or remove items — it all saves.</div>
+    <div id="timeline"></div>
+  </div>
+
+</div>
+
+<script>
+/* ============ SUPABASE ============
+   Fill these in from Supabase → Project Settings → API. The anon key is safe
+   to commit: row-level security is on and public signup is disabled, so only
+   the two accounts you create by hand can read or write. */
+const SUPABASE_URL      = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* Per-entity save helpers. Each mutates the DB in the background; the
+   in-memory arrays are the working source of truth and stay updated by the
+   handlers themselves. Errors log to console (RLS blocks writes when the user
+   isn't signed in, which is expected behind the auth gate). */
+const _dbErr = op => ({error}) => { if (error) console.warn('[db]', op, error.message||error); };
+
+function saveGuest(g) {
+  db.from('guests').upsert({
+    id: g.id, name: g.name, status: g.status,
+    family: !!g.family, bridal: !!g.bridal,
+    room_id: g.room ?? null, email: g.email ?? null, note: g.note ?? null,
+    position: guests.indexOf(g)
+  }).then(_dbErr('saveGuest'));
+}
+function deleteGuest(id) {
+  db.from('guests').delete().eq('id', id).then(_dbErr('deleteGuest'));
+}
+function saveRoom(r) {
+  db.from('rooms').upsert({
+    id: r.id, name: r.name, cap: r.cap,
+    category: r.cat ?? null, features: r.feat ?? null,
+    position: rooms.indexOf(r)
+  }).then(_dbErr('saveRoom'));
+}
+function deleteRoom(id) {
+  db.from('rooms').delete().eq('id', id).then(_dbErr('deleteRoom'));
+}
+let _vendorMeta = null;
+function _ensureVendorMeta() {
+  if (_vendorMeta) return;
+  _vendorMeta = {};
+  VENDOR_LIST.forEach(gp => gp.vendors.forEach(v => {
+    _vendorMeta[vid(gp.cat, v.name)] = { category: gp.cat, name: v.name, contact: v.contact };
+  }));
+}
+function saveVendor(id) {
+  _ensureVendorMeta();
+  const s = vstate[id] || {status:'', notes:''};
+  const m = _vendorMeta[id] || {};
+  db.from('vendors').upsert({
+    id, category: m.category ?? null, name: m.name ?? null, contact: m.contact ?? null,
+    status: s.status || '', notes: s.notes || ''
+  }).then(_dbErr('saveVendor'));
+}
+function saveTask(t) {
+  db.from('tasks').upsert({
+    id: t.id, label: t.text,
+    before_days: t.before ?? null,
+    due_date: t.date ?? null,
+    done: !!t.done, position: tasks.indexOf(t)
+  }).then(_dbErr('saveTask'));
+}
+function deleteTask(id) {
+  db.from('tasks').delete().eq('id', id).then(_dbErr('deleteTask'));
+}
+function saveTimelineDay(day_id, label, position) {
+  db.from('timeline_days').upsert({ id: day_id, label, position }).then(_dbErr('saveTimelineDay'));
+}
+async function insertTimelineItem(day_id, item, position) {
+  const { data, error } = await db.from('timeline_items')
+    .insert({ day_id, time_label: item.time || '', activity: item.act || '', position })
+    .select().single();
+  if (error) { console.warn('[db] insertTimelineItem', error.message); return null; }
+  return data.id;
+}
+function saveTimelineItem(item, day_id, position) {
+  if (item.row_id == null) return;
+  db.from('timeline_items').update({
+    day_id, time_label: item.time || '', activity: item.act || '', position
+  }).eq('id', item.row_id).then(_dbErr('saveTimelineItem'));
+}
+function deleteTimelineItem(row_id) {
+  db.from('timeline_items').delete().eq('id', row_id).then(_dbErr('deleteTimelineItem'));
+}
+function savePayment(key) {
+  db.from('payments').upsert({ key, paid: !!payState[key] }).then(_dbErr('savePayment'));
+}
+let _saveSettingsT = null;
+function saveSettings() {
+  clearTimeout(_saveSettingsT);
+  _saveSettingsT = setTimeout(() => {
+    db.from('settings').upsert({ id: 1, data: state }).then(_dbErr('saveSettings'));
+  }, 300);
+}
+
+const eur=n=>'€'+Math.round(n).toLocaleString('en-US');
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/* 2028 nightly room-exclusivity prices (from Amastuola's availability sheet) */
+const PRICES={"2028-04-01":4900,"2028-04-02":4900,"2028-04-03":3900,"2028-04-04":3900,"2028-04-05":3900,"2028-04-06":3900,"2028-04-07":4900,"2028-04-08":4900,"2028-04-09":4900,"2028-04-10":3900,"2028-04-11":3900,"2028-04-12":3900,"2028-04-13":3900,"2028-04-14":4900,"2028-04-15":4900,"2028-04-16":4900,"2028-04-17":3900,"2028-04-18":3900,"2028-04-19":3900,"2028-04-20":3900,"2028-04-21":4900,"2028-04-22":4900,"2028-04-23":4900,"2028-04-24":3900,"2028-04-25":3900,"2028-04-26":3900,"2028-04-27":3900,"2028-04-28":4900,"2028-04-29":4900,"2028-04-30":4900,"2028-05-01":4700,"2028-05-02":4700,"2028-05-03":4700,"2028-05-04":4700,"2028-05-11":4700,"2028-05-12":5700,"2028-05-13":5700,"2028-05-14":5700,"2028-05-15":4700,"2028-05-16":4700,"2028-05-17":4700,"2028-05-18":4700,"2028-05-19":7200,"2028-05-20":7200,"2028-05-21":7200,"2028-05-22":5200,"2028-05-23":5200,"2028-05-24":5200,"2028-05-25":5200,"2028-05-26":7200,"2028-05-27":7200,"2028-05-28":7200,"2028-06-04":7500,"2028-06-05":6500,"2028-06-06":6500,"2028-06-07":6500,"2028-06-08":6500,"2028-06-09":7500,"2028-06-10":7500,"2028-06-11":7500,"2028-06-12":6500,"2028-06-13":6500,"2028-06-14":6500,"2028-06-15":6500,"2028-06-16":7500,"2028-06-17":7500,"2028-06-18":7500,"2028-06-19":6500,"2028-06-20":6500,"2028-06-21":6500,"2028-06-25":7500,"2028-06-26":6500,"2028-06-27":6500,"2028-06-28":6500,"2028-06-29":6500,"2028-06-30":7500,"2028-07-01":7500,"2028-07-02":7500,"2028-07-06":5700,"2028-07-07":6700,"2028-07-08":6700,"2028-07-09":6700,"2028-07-10":5700,"2028-07-11":5700,"2028-07-12":5700,"2028-07-13":5700,"2028-07-14":6700,"2028-07-15":6700,"2028-07-16":6700,"2028-07-17":5700,"2028-07-18":5700,"2028-07-19":5700,"2028-07-20":5700,"2028-07-21":6700,"2028-07-22":6700,"2028-07-23":6700,"2028-07-24":5700,"2028-07-25":5700,"2028-07-26":5700,"2028-07-30":6700,"2028-07-31":5700,"2028-08-01":5700,"2028-08-02":5700,"2028-08-03":5700,"2028-08-04":6700,"2028-08-05":6700,"2028-08-06":6700,"2028-08-07":9200,"2028-08-08":9200,"2028-08-09":9200,"2028-08-10":9200,"2028-08-11":9200,"2028-08-12":9200,"2028-08-13":9200,"2028-08-14":9200,"2028-08-15":9200,"2028-08-16":9200,"2028-08-17":9200,"2028-08-18":9200,"2028-08-19":9200,"2028-08-20":9200,"2028-08-21":5700,"2028-08-22":5700,"2028-08-23":5700,"2028-08-24":5700,"2028-08-28":5700,"2028-08-29":5700,"2028-08-30":5700,"2028-08-31":5700,"2028-09-01":7500,"2028-09-02":7500,"2028-09-03":7500,"2028-09-04":6500,"2028-09-05":6500,"2028-09-06":6500,"2028-09-07":6500,"2028-09-08":7500,"2028-09-09":7500,"2028-09-10":7500,"2028-09-11":6500,"2028-09-12":6500,"2028-09-13":6500,"2028-09-14":6500,"2028-09-15":7500,"2028-09-16":7500,"2028-09-17":7500,"2028-09-18":6500,"2028-09-19":6500,"2028-09-20":6500,"2028-09-21":6500,"2028-09-22":7500,"2028-09-23":7500,"2028-09-24":7500,"2028-09-25":6500,"2028-09-26":6500,"2028-09-27":6500,"2028-09-28":6500,"2028-09-29":7500,"2028-09-30":7500,"2028-10-01":7200,"2028-10-02":5700,"2028-10-03":5700,"2028-10-04":5700,"2028-10-05":5700,"2028-10-06":6700,"2028-10-07":6700,"2028-10-08":6700,"2028-10-09":5700,"2028-10-10":5700,"2028-10-11":5700,"2028-10-12":5700,"2028-10-13":6700,"2028-10-14":6700,"2028-10-15":6700,"2028-10-16":3900,"2028-10-17":3900,"2028-10-18":3900,"2028-10-19":3900,"2028-10-20":4900,"2028-10-21":4900,"2028-10-22":4900,"2028-10-23":3900,"2028-10-24":3900,"2028-10-25":3900,"2028-10-26":3900,"2028-10-27":4900,"2028-10-28":4900,"2028-10-29":4900,"2028-10-30":3900,"2028-10-31":3900,"2028-11-01":3900,"2028-11-02":3900,"2028-11-03":4900,"2028-11-04":4900,"2028-11-05":4900};
+
+const A_MENU={centosassi:{50:280,70:235,100:225,130:205,label:'Centosassi'},ondarosa:{50:250,70:205,100:195,130:175,label:'Ondarosa'},calaprice:{50:240,70:190,100:180,130:165,label:'Calaprice'}};
+const A_BAR={none:{base:0,extra:0,label:'No open bar'},bw1:{base:1100,extra:11,label:'Beer & wine · 1h'},bw2:{base:1650,extra:18,label:'Beer & wine · 2h'},bw3:{base:2150,extra:24,label:'Beer & wine · 3h'},bw4:{base:2800,extra:32,label:'Beer & wine · 4h'},ck1:{base:2100,extra:14,label:'Cocktails+ · 1h'},ck2:{base:2950,extra:28,label:'Cocktails+ · 2h'},ck3:{base:3900,extra:42,label:'Cocktails+ · 3h'},ck4:{base:5300,extra:55,label:'Cocktails+ · 4h'},cb100:{base:1100,extra:0,label:'Cocktail bar · 100'},cb250:{base:2200,extra:0,label:'Cocktail bar · 250'},cb350:{base:2900,extra:0,label:'Cocktail bar · 350'}};
+const A_WELCOME={none:0,pizza:60,buffet:75,winedinner:95};const A_WLABEL={pizza:'Pizza party',buffet:'Apulian buffet',winedinner:'Wine-pairing dinner'};
+let A_ONSITE_BEDS=49; // total on-site beds
+let A_STAYING=48,A_EXTRA_BEDS=12; // staying guests & extra beds in use, synced from the Rooms tab
+let planHook=null; // lets the Plan tab refresh when the budget/date changes
+const VENDORS=[{id:'planner',label:'Wedding planner',max:15000,def:7500},{id:'photo',label:'Photo + video',max:12000,def:6000},{id:'florals',label:'Florals & décor',max:12000,def:5000},{id:'music',label:'Music · DJ or band',max:8000,def:3500},{id:'hmu',label:'Hair & makeup',max:4000,def:1500},{id:'transport',label:'Guest transport',max:6000,def:2000},{id:'other',label:'Attire, rings & buffer',max:15000,def:1000}];
+
+let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0};
+const PRESETS={rec:{menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0},
+  cheap:{menu:'calaprice',abar:'none',ext:'0',welcome:'none',brunch:'off',ceremony:'symbolic',olive:'off',contrib:'150',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0},
+  splurge:{menu:'centosassi',abar:'ck4',ext:'2',welcome:'winedinner',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'on',dessert:'on',icecream:'on',rum:'on',prosecco:'on',fireworks:'on',kids:0}};
+
+function roomCost(){
+  const nights=[];let total=0,allAvail=true;
+  const [y,m,d]=state.checkin.split('-').map(Number);
+  for(let i=0;i<3;i++){
+    const dt=new Date(y,m-1,d+i);
+    const key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+    const price=PRICES[key];
+    nights.push({dt,key,price});
+    if(price)total+=price;else allAvail=false;
+  }
+  return {nights,total,allAvail};
+}
+
+function compute(){
+  const g=state.guests;const rm=roomCost();
+  const m=A_MENU[state.menu];const bk=g>=130?130:g>=100?100:g>=70?70:50;
+  let billed=g,rate=m[bk],recCost=g*rate;[70,100,130].forEach(tc=>{if(tc>g){const c=tc*m[tc];if(c<recCost){recCost=c;billed=tc;rate=m[tc];}}});
+  let cer=0;if(state.ceremony==='catholic')cer=1500;else{cer=g*10;if(state.olive==='on')cer+=500;if(state.ceremony==='civil')cer+=600;}
+  const ab=A_BAR[state.abar];const bar=ab.base+(ab.extra?Math.max(0,g-80)*ab.extra:0);
+  const wel=g*A_WELCOME[state.welcome];const bru=state.brunch==='on'?g*50:0;const ext=Number(state.ext)*500;
+  const cento=state.menu==='centosassi';const ex=[];
+  if(!cento&&state.cheese==='on')ex.push({l:'Live cheesemaker corner',d:'€15pp',amt:g*15});
+  if(!cento&&state.panzerotto==='on')ex.push({l:'Panzerotto & tempura',d:'€12pp',amt:g*12});
+  if(!cento&&state.spritz==='on')ex.push({l:'Aperol spritz corner',d:'1.5h · ≤80 guests',amt:900+Math.max(0,g-80)*6});
+  if(state.rawsea==='on')ex.push({l:'Raw seafood corner',d:'per ~50 guests',amt:Math.ceil(g/50)*1000});
+  if(state.dessert==='on')ex.push({l:'Dessert & fruit buffet',d:'€15pp',amt:g*15});
+  if(state.icecream==='on')ex.push({l:'Ice cream cart',d:'≤80 guests',amt:500+Math.max(0,g-80)*4});
+  if(state.rum==='on')ex.push({l:'Rum, cigars & chocolate',d:'≤80 guests',amt:600+Math.max(0,g-80)*4});
+  if(state.prosecco==='on')ex.push({l:'Prosecco tower',d:'4 bottles',amt:300});
+  if(state.fireworks==='on')ex.push({l:'Fireworks show',d:'1m30s · flat',amt:400});
+  if(state.kids>0)ex.push({l:'Kids menu',d:state.kids+' × €80',amt:state.kids*80});
+  const ven=Math.round(4*0.5*rate);
+  const exBeds=A_EXTRA_BEDS,exBedCost=exBeds*50*3,roomTotal=rm.total+exBedCost;
+  const isFull=state.contrib==='full';const paying=Math.max(0,A_STAYING-2);let contrib,perPP;
+  if(isFull){contrib=roomTotal;perPP=paying>0?roomTotal/paying:0;}else{const cRate=Number(state.contrib);perPP=cRate*3;contrib=Math.min(paying*cRate*3,roomTotal);}
+  const rows=[];
+  const nd=rm.nights.map(n=>WD[n.dt.getDay()]+' '+n.dt.getDate()+' '+MO[n.dt.getMonth()]+(n.price?' €'+n.price.toLocaleString('en-US'):' n/a')).join(' · ');
+  rows.push({l:'Room exclusivity · 3 nights',d:nd,amt:rm.total,warn:!rm.allAvail});
+  if(exBedCost>0)rows.push({l:'Extra beds',d:exBeds+' beds × €50/night × 3 · from your room plan',amt:exBedCost});
+  rows.push({l:'Reception · '+m.label,d:billed>g?(g+' guests billed as '+billed+' covers @ €'+rate+'pp · smarter bracket'):(g+' covers @ €'+rate+'pp'),amt:recCost});
+  if(cer>0)rows.push({l:'Ceremony',d:state.ceremony==='catholic'?'off-site church + transport (est.)':(state.ceremony==='civil'?'on-site + town-hall fee (est.)':'on-site package'+(state.olive==='on'?' + olive grove':'')),amt:cer});
+  if(bar>0)rows.push({l:ab.label,d:(ab.extra&&g>80)?('incl. '+(g-80)+' over 80'):'',amt:bar});
+  if(wel>0)rows.push({l:'Welcome · '+A_WLABEL[state.welcome],d:'estimate',amt:wel});
+  if(bru>0)rows.push({l:'Farewell BBQ brunch',d:'estimate',amt:bru});
+  if(ext>0)rows.push({l:'Late-party extension',d:'+'+state.ext+'h @ €500/h',amt:ext});
+  ex.forEach(x=>rows.push(x));
+  rows.push({l:'Vendor meals',d:'~4 @ 50% of menu',amt:ven});
+  rows.push({l:'SIAE music licence',d:'mandatory · wedding day · estimate, confirm amount',amt:300});
+  if(contrib>0)rows.push({credit:true,l:'Less · guest room contribution',d:(isFull?'guests split the full room cost':'€'+state.contrib+' pp/night')+' · '+paying+' guests · '+eur(perPP)+'/guest',amt:-contrib});
+  return {total:rows.reduce((s,r)=>s+r.amt,0),rows,rm,cento,perPP,paying,roomTotal,contrib,isFull};
+}
+
+const vc=document.getElementById('vendors');
+VENDORS.forEach(v=>{const d=document.createElement('div');d.className='vrow';d.innerHTML='<div class="flab"><span>'+v.label+'</span><span class="v" id="lab-'+v.id+'"></span></div><input type="range" id="v-'+v.id+'" min="0" max="'+v.max+'" step="250" value="'+v.def+'">';vc.appendChild(d);});
+function vendorSum(){return VENDORS.reduce((s,v)=>s+Number(document.getElementById('v-'+v.id).value),0);}
+
+function render(){
+  const r=compute();
+  document.getElementById('guestval').textContent=state.guests+' guests';
+  document.getElementById('kidsval').textContent=state.kids+' kids';
+  document.getElementById('total').textContent=eur(r.total);
+  document.getElementById('perguest').textContent=eur(r.total/state.guests)+' / guest venue-side';
+  {const opt=state.contrib;let msg;if(opt==='0')msg='You cover the rooms — guests pay nothing.';else if(opt==='full')msg='Guests split the full room cost: '+eur(r.perPP)+' per guest ('+eur(r.perPP/3)+'/night) across '+r.paying+' staying guests · your room cost drops to €0.';else msg='Guests pay '+eur(r.perPP)+' each (€'+opt+'/night × 3) · covers '+eur(r.contrib)+' of the '+eur(r.roomTotal)+' room cost ('+r.paying+' staying).';document.getElementById('contribpp').textContent=msg;}
+
+  // nights display
+  const nb=document.getElementById('nights');nb.innerHTML='';
+  r.rm.nights.forEach(n=>{const el=document.createElement('div');el.className='night'+(n.price?'':' na');el.innerHTML='<div class="d">'+WD[n.dt.getDay()]+' '+n.dt.getDate()+' '+MO[n.dt.getMonth()]+'</div><div class="p">'+(n.price?eur(n.price):'n/a')+'</div>';nb.appendChild(el);});
+  // month range hint
+  const mo=state.checkin.slice(0,7);const mvals=Object.entries(PRICES).filter(([k])=>k.slice(0,7)===mo).map(([,v])=>v);
+  const dr=document.getElementById('daterange');
+  if(!r.rm.allAvail){dr.className='note warn';dr.textContent='⚠ One or more of these nights isn\u2019t in the 2028 sheet — pick another start date or confirm with the venue.';}
+  else if(mvals.length){dr.className='note';dr.textContent=MO[Number(mo.slice(5))-1]+' 2028 nightly rates range '+eur(Math.min(...mvals))+'–'+eur(Math.max(...mvals))+' · weekends run higher.';}
+  else{dr.className='note';dr.textContent='';}
+
+  document.getElementById('centonote').style.display=r.cento?'block':'none';
+  ['cheese','panzerotto','spritz'].forEach(k=>{document.querySelector('[data-group="'+k+'"]').style.display=r.cento?'none':'flex';document.getElementById('badge-'+k).style.display=r.cento?'block':'none';});
+
+  let html='';r.rows.forEach(x=>{const a=x.amt<0?'−'+eur(-x.amt):eur(x.amt);html+='<div class="bdrow'+(x.credit?' credit':'')+'"><span class="l">'+x.l+'</span><span class="amt">'+a+'</span>'+(x.d?'<span class="d">'+x.d+'</span>':'')+'</div>';});
+  html+='<div class="bdtotal"><span>Venue-side total</span><span class="amt">'+eur(r.total)+'</span></div>';
+  document.getElementById('breakdown').innerHTML=html;
+
+  const vs=vendorSum();VENDORS.forEach(v=>{document.getElementById('lab-'+v.id).textContent=eur(Number(document.getElementById('v-'+v.id).value));});
+  document.getElementById('vendortotal').textContent=eur(vs);
+  document.getElementById('grandtotal').textContent=eur(r.total+vs);
+  document.getElementById('g-venue').textContent=eur(r.total);document.getElementById('g-vend').textContent=eur(vs);document.getElementById('grandper').textContent=eur((r.total+vs)/state.guests);
+  document.getElementById('foot').innerHTML='Room rates are Amastuola\u2019s 2028 nightly exclusivity prices; everything else is VAT-included brochure pricing. Welcome-night, brunch and ceremony lines are estimates. Vendor sliders are typical Puglia ranges — swap in real quotes. A planning baseline, not a quote.';
+
+  document.querySelectorAll('[data-group]').forEach(grp=>{const k=grp.dataset.group;grp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.value===String(state[k])));});
+  document.getElementById('checkin').value=state.checkin;document.getElementById('guests').value=state.guests;document.getElementById('kids').value=state.kids;document.getElementById('abar').value=state.abar;
+  if(planHook)planHook();
+}
+
+document.querySelectorAll('[data-group]').forEach(grp=>{const k=grp.dataset.group;grp.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{state[k]=c.dataset.value;render();saveSettings();}));});
+document.getElementById('checkin').addEventListener('change',e=>{state.checkin=e.target.value;render();saveSettings();});
+document.getElementById('guests').addEventListener('input',e=>{state.guests=Number(e.target.value);render();saveSettings();});
+document.getElementById('kids').addEventListener('input',e=>{state.kids=Number(e.target.value);render();saveSettings();});
+document.getElementById('abar').addEventListener('change',e=>{state.abar=e.target.value;render();saveSettings();});
+VENDORS.forEach(v=>document.getElementById('v-'+v.id).addEventListener('input',render));
+document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{Object.assign(state,PRESETS[b.dataset.preset]);render();saveSettings();}));
+
+render();
+
+/* ============ TABS ============ */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['budget','guests','rooms','vendors','plan'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
+
+/* ============ PLANNER: guests + rooms ============ */
+function esc(x){return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function buildGuests(){return [
+{id:1,name:"Me",status:"likely",family:false,bridal:false,room:101},
+{id:2,name:"Brian",status:"likely",family:false,bridal:false,room:101},
+{id:3,name:"Ava",status:"likely",family:false,bridal:false,room:204},
+{id:4,name:"Mommy",status:"likely",family:true,bridal:false,room:104},
+{id:5,name:"Juan",status:"likely",family:false,bridal:false,room:104},
+{id:6,name:"Michael",status:"likely",family:false,bridal:false,room:106},
+{id:7,name:"Brian's dad",status:"likely",family:true,bridal:false,room:108},
+{id:8,name:"Rosie",status:"likely",family:false,bridal:false,room:108},
+{id:9,name:"Aunt franca",status:"likely",family:true,bridal:false,room:102},
+{id:10,name:"uncle joe",status:"likely",family:true,bridal:false,room:102},
+{id:11,name:"fran",status:"likely",family:true,bridal:false,room:205},
+{id:12,name:"mia",status:"likely",family:true,bridal:false,room:205},
+{id:13,name:"jayden",status:"likely",family:true,bridal:false,room:203},
+{id:14,name:"dominque",status:"likely",family:true,bridal:false,room:203},
+{id:15,name:"doninques husband",status:"likely",family:true,bridal:false,room:203},
+{id:16,name:"aunt roe",status:"likely",family:true,bridal:false,room:103},
+{id:17,name:"uncle tom",status:"likely",family:true,bridal:false,room:103},
+{id:18,name:"tj",status:"likely",family:true,bridal:false,room:105},
+{id:19,name:"jeff",status:"likely",family:true,bridal:false,room:105},
+{id:20,name:"brian's grandma",status:"likely",family:true,bridal:false,room:108},
+{id:21,name:"adrianna",status:"likely",family:true,bridal:false,room:108},
+{id:22,name:"greg",status:"likely",family:true,bridal:false,room:108},
+{id:23,name:"Uncle Ronnie",status:"maybe",family:true,bridal:false,room:null},
+{id:24,name:"Aunt Lisa",status:"likely",family:true,bridal:false,room:207},
+{id:25,name:"Antonio",status:"likely",family:true,bridal:false,room:207},
+{id:26,name:"Antonio wife",status:"no",family:false,bridal:false,room:null},
+{id:27,name:"Mike",status:"likely",family:false,bridal:true,room:109},
+{id:28,name:"Kim",status:"likely",family:false,bridal:true,room:109},
+{id:29,name:"Sam",status:"likely",family:false,bridal:true,room:206},
+{id:30,name:"Bri",status:"likely",family:false,bridal:true,room:201},
+{id:31,name:"chris",status:"likely",family:false,bridal:true,room:201},
+{id:32,name:"Tommy",status:"likely",family:false,bridal:true,room:209},
+{id:33,name:"Nikki",status:"likely",family:false,bridal:true,room:209},
+{id:34,name:"Nik",status:"likely",family:false,bridal:true,room:208},
+{id:35,name:"Sandy",status:"likely",family:false,bridal:false,room:208},
+{id:36,name:"Ken",status:"likely",family:false,bridal:true,room:208},
+{id:37,name:"Brit",status:"likely",family:false,bridal:false,room:null},
+{id:38,name:"Neil",status:"likely",family:false,bridal:false,room:null},
+{id:39,name:"Alexa",status:"likely",family:false,bridal:false,room:null},
+{id:40,name:"Matt",status:"likely",family:false,bridal:false,room:null},
+{id:41,name:"Tiff",status:"likely",family:false,bridal:false,room:null},
+{id:42,name:"Maddie",status:"likely",family:false,bridal:false,room:null},
+{id:43,name:"Griffin",status:"likely",family:false,bridal:false,room:null},
+{id:44,name:"Neal",status:"likely",family:false,bridal:false,room:107},
+{id:45,name:"Chris",status:"likely",family:false,bridal:false,room:202},
+{id:46,name:"Nicole",status:"likely",family:false,bridal:false,room:202},
+{id:47,name:"Gab Falco",status:"maybe",family:false,bridal:false,room:null},
+{id:48,name:"Gab BF",status:"maybe",family:false,bridal:false,room:null},
+{id:49,name:"Black kris",status:"likely",family:false,bridal:false,room:null},
+{id:50,name:"Victoria",status:"maybe",family:false,bridal:false,room:null},
+{id:51,name:"Matt",status:"maybe",family:false,bridal:false,room:null},
+{id:52,name:"Wes",status:"likely",family:false,bridal:false,room:null},
+{id:53,name:"Kaitlyn",status:"likely",family:false,bridal:false,room:201},
+{id:54,name:"Kevin",status:"likely",family:false,bridal:false,room:null},
+{id:55,name:"Allie",status:"likely",family:false,bridal:false,room:206},
+{id:56,name:"Siena",status:"likely",family:false,bridal:false,room:107},
+{id:57,name:"Dave",status:"likely",family:false,bridal:false,room:107},
+{id:58,name:"Calie",status:"likely",family:false,bridal:false,room:null},
+{id:59,name:"Calie BF",status:"likely",family:false,bridal:false,room:null},
+{id:60,name:"Paul",status:"no",family:false,bridal:false,room:null},
+{id:61,name:"Karen",status:"no",family:false,bridal:false,room:null},
+{id:62,name:"Steve",status:"likely",family:false,bridal:false,room:null},
+{id:63,name:"Tinamarie",status:"likely",family:false,bridal:false,room:null},
+{id:64,name:"Joe",status:"likely",family:false,bridal:false,room:null},
+{id:65,name:"Michelle (Fran)",status:"likely",family:false,bridal:false,room:209},
+{id:66,name:"Luis",status:"likely",family:false,bridal:false,room:null},
+{id:67,name:"Luis GF",status:"likely",family:false,bridal:false,room:null},
+{id:68,name:"Ricky",status:"likely",family:false,bridal:false,room:null},
+{id:69,name:"Ricky GF",status:"likely",family:false,bridal:false,room:null},
+{id:70,name:"Rin",status:"likely",family:false,bridal:false,room:null},
+{id:71,name:"Sam D",status:"likely",family:false,bridal:false,room:109},
+{id:72,name:"Ava BF (Frank)",status:"likely",family:false,bridal:false,room:204},
+{id:73,name:"Fran BF",status:"likely",family:false,bridal:false,room:205},
+{id:74,name:"Michael GF",status:"likely",family:false,bridal:false,room:106},
+{id:75,name:"Sam BF",status:"likely",family:false,bridal:false,room:206},
+{id:76,name:"Aunt Lisa Husband",status:"likely",family:false,bridal:false,room:207}
+];}
+function buildRooms(){return [{id:101,name:'101 · Ovile Suite',cap:2,cat:'Suite',feat:'ground floor · Jacuzzi'},{id:107,name:'107 · Suite Deluxe',cap:3,cat:'Suite',feat:'ground floor · Jacuzzi'},{id:108,name:'108 · Suite Superior',cap:5,cat:'Suite',feat:'ground floor · two separate rooms'},{id:204,name:'204 · Padronale Suite',cap:2,cat:'Suite',feat:'first floor · bathtub · private terrace'},{id:102,name:'102 · Deluxe',cap:3,cat:'Deluxe',feat:'ground floor'},{id:103,name:'103 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor · twin option'},{id:104,name:'104 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor'},{id:105,name:'105 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor'},{id:106,name:'106 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor · twin option'},{id:109,name:'109 · Deluxe',cap:3,cat:'Deluxe',feat:'ground floor · twin option'},{id:201,name:'201 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor'},{id:202,name:'202 · Exclusive',cap:2,cat:'Exclusive',feat:'first floor'},{id:203,name:'203 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option'},{id:205,name:'205 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'},{id:206,name:'206 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option · balcony'},{id:207,name:'207 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'},{id:208,name:'208 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option · balcony'},{id:209,name:'209 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'}];}
+let guests=buildGuests();
+let rooms=buildRooms();
+
+/* Left as a no-op: mutation sites now call the per-entity save*() helpers
+   at the top of the script. Kept so any stray reference doesn't throw. */
+function persist(){}
+async function hydrate(){
+  try {
+    const [gr, rr, vr, tr, td, ti, pr, sr] = await Promise.all([
+      db.from('guests').select('*').order('position'),
+      db.from('rooms').select('*').order('position'),
+      db.from('vendors').select('*'),
+      db.from('tasks').select('*').order('position'),
+      db.from('timeline_days').select('*').order('position'),
+      db.from('timeline_items').select('*').order('position'),
+      db.from('payments').select('*'),
+      db.from('settings').select('*').eq('id',1).maybeSingle()
+    ]);
+    if (rr.data && rr.data.length) {
+      rooms = rr.data.map(r => ({id:r.id, name:r.name, cap:r.cap, cat:r.category, feat:r.features}));
+    }
+    if (gr.data && gr.data.length) {
+      guests = gr.data.map(g => ({
+        id:g.id, name:g.name, status:g.status,
+        family:!!g.family, bridal:!!g.bridal,
+        room:g.room_id, email:g.email, note:g.note
+      }));
+    }
+    if (vr.data && vr.data.length) {
+      vstate = {};
+      vr.data.forEach(v => { vstate[v.id] = {status:v.status||'', notes:v.notes||''}; });
+    }
+    if (tr.data && tr.data.length) {
+      tasks = tr.data.map(t => {
+        const o = {id:t.id, text:t.label, done:!!t.done};
+        if (t.due_date) o.date = t.due_date;
+        else o.before = t.before_days ?? 0;
+        return o;
+      });
+    }
+    if (td.data && td.data.length && ti.data) {
+      const byDay = {};
+      ti.data.forEach(x => {
+        (byDay[x.day_id] = byDay[x.day_id] || []).push({row_id:x.id, time:x.time_label||'', act:x.activity||''});
+      });
+      timeline = td.data.map(d => ({day_id:d.id, day:d.label, items:byDay[d.id]||[]}));
+    }
+    if (pr.data && pr.data.length) {
+      payState = {};
+      pr.data.forEach(p => { payState[p.key] = !!p.paid; });
+    }
+    if (sr.data && sr.data.data) {
+      Object.assign(state, sr.data.data);
+    }
+  } catch (e) {
+    console.warn('[db] hydrate error — keeping in-memory defaults', e);
+  }
+  render();
+  renderGuests();
+  renderRooms();
+  renderVendors();
+  renderPlan();
+}
+
+/* Realtime: any change to a subscribed table triggers a full re-hydrate.
+   Cheap enough at this data size and keeps both devices in sync. */
+let _channels = [];
+function subscribeRealtime() {
+  unsubscribeRealtime();
+  ['guests','rooms','vendors','tasks','timeline_days','timeline_items','payments','settings'].forEach(t => {
+    const ch = db.channel('rt-'+t)
+      .on('postgres_changes', {event:'*', schema:'public', table:t}, () => hydrate())
+      .subscribe();
+    _channels.push(ch);
+  });
+}
+function unsubscribeRealtime() {
+  _channels.forEach(c => db.removeChannel(c));
+  _channels = [];
+}
+
+/* Auth gate: block the app until sign-in, then hydrate + subscribe. */
+async function initAuth() {
+  const { data:{ session } } = await db.auth.getSession();
+  if (session) unlockApp(); else showAuthGate();
+  db.auth.onAuthStateChange((_evt, sess) => {
+    if (sess) unlockApp(); else showAuthGate();
+  });
+}
+function showAuthGate() {
+  document.getElementById('authgate').style.display = 'flex';
+  document.getElementById('signout').style.display = 'none';
+  unsubscribeRealtime();
+}
+function unlockApp() {
+  document.getElementById('authgate').style.display = 'none';
+  document.getElementById('signout').style.display = 'block';
+  hydrate();
+  subscribeRealtime();
+}
+document.getElementById('authform').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('autherr');
+  err.textContent = '';
+  const email = document.getElementById('authemail').value.trim();
+  const password = document.getElementById('authpw').value;
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  if (error) err.textContent = error.message;
+});
+document.getElementById('signout').addEventListener('click', async () => {
+  await db.auth.signOut();
+  location.reload();
+});
+
+function renderGuests(){
+  const c=s=>guests.filter(g=>g.status===s).length;
+  const fam=guests.filter(g=>g.family).length,bri=guests.filter(g=>g.bridal).length,roomed=guests.filter(g=>g.room!=null).length;
+  document.getElementById('gsum').innerHTML=guests.length+' guests &middot; <b>'+c('likely')+'</b> likely &middot; '+c('maybe')+' maybe &middot; '+c('no')+' no &middot; '+fam+' family &middot; '+bri+' bridal &middot; '+roomed+' roomed';
+  document.getElementById('applybtn').textContent='Use '+c('likely')+' likely in budget \u2192';
+  document.getElementById('guestlist').innerHTML=guests.map(g=>{
+    const r=g.room!=null?(rooms.find(x=>x.id===g.room)||{}).name:null;
+    return '<div class="guest"><div class="gtop"><span class="gnum">'+g.id+'</span><input class="gname" data-id="'+g.id+'" value="'+esc(g.name)+'"><span class="grm'+(r?' has':'')+'">'+(r?esc(r):'\u2014')+'</span><button class="gx" data-act="remove" data-id="'+g.id+'">\u00d7</button></div><div class="gtags"><div class="statuswrap"><button class="mini'+(g.status==='likely'?' on-yes':'')+'" data-act="status" data-id="'+g.id+'" data-val="likely">Likely</button><button class="mini'+(g.status==='maybe'?' on-maybe':'')+'" data-act="status" data-id="'+g.id+'" data-val="maybe">Maybe</button><button class="mini'+(g.status==='no'?' on-no':'')+'" data-act="status" data-id="'+g.id+'" data-val="no">No</button></div><button class="mini tag'+(g.family?' on':'')+'" data-act="family" data-id="'+g.id+'">Family</button><button class="mini tag'+(g.bridal?' on':'')+'" data-act="bridal" data-id="'+g.id+'">Bridal</button></div><div class="gextra"><input class="gemail" data-id="'+g.id+'" placeholder="email" value="'+esc(g.email||'')+'"><input class="gnote" data-id="'+g.id+'" placeholder="notes (dietary, +1…)" value="'+esc(g.note||'')+'"></div></div>';
+  }).join('');
+}
+function syncBeds(){A_ONSITE_BEDS=rooms.reduce((s,r)=>s+r.cap,0);A_STAYING=guests.filter(g=>g.room!=null).length;A_EXTRA_BEDS=rooms.reduce((s,r)=>{const o=guests.filter(g=>g.room===r.id).length;return s+Math.max(0,o-2);},0);if(typeof render==="function")render();}
+function renderRooms(){
+  syncBeds();
+  const beds=rooms.reduce((s,r)=>s+r.cap,0),assigned=guests.filter(g=>g.room!=null).length;
+  const off=guests.filter(g=>g.status==='likely'&&g.room==null).length;
+  document.getElementById('rsum').innerHTML=rooms.length+' rooms &middot; '+beds+' beds &middot; <b>'+assigned+'</b> assigned &middot; '+(beds-assigned)+' open &middot; '+off+' likely still off-site';
+  const un=guests.filter(g=>g.room==null);
+  document.getElementById('roomlist').innerHTML=rooms.map(r=>{
+    const occ=guests.filter(g=>g.room===r.id),over=occ.length>r.cap;
+    const chips=occ.map(g=>'<span class="occ">'+esc(g.name)+'<button data-act="unassign" data-id="'+g.id+'">\u00d7</button></span>').join('')||'<span class="empty">empty</span>';
+    const opts=un.map(g=>'<option value="'+g.id+'">'+esc(g.name)+'</option>').join('');
+    return '<div class="room'+(over?' over':'')+'"><div class="rtop"><input class="rname" data-room="'+r.id+'" value="'+esc(r.name)+'"><div class="cap"><button data-act="cap-dec" data-room="'+r.id+'">\u2212</button><span>'+r.cap+'</span><button data-act="cap-inc" data-room="'+r.id+'">+</button></div><button class="rx" data-act="room-remove" data-room="'+r.id+'">\u00d7</button></div>'+(r.feat?'<div class="rfeat">'+esc(r.feat)+' · sleeps up to '+r.cap+'</div>':'')+'<div class="roccupants">'+chips+'</div><select class="radd" data-room="'+r.id+'"><option value="">+ add guest\u2026</option>'+opts+'</select><div class="rfoot">'+occ.length+' / '+r.cap+(over?' <span class="warn">over max occupancy</span>':'')+'</div></div>';
+  }).join('');
+  // unassigned (exclude 'no' RSVPs)
+  const unL=guests.filter(g=>g.room==null&&g.status==='likely'),unM=guests.filter(g=>g.room==null&&g.status==='maybe');
+  let uh;
+  if(!unL.length&&!unM.length)uh='<h4>Everyone attending has a room \u2713</h4>';
+  else uh='<h4>Not yet in a room \u2014 '+unL.length+' likely, '+unM.length+' maybe (off-site / to place)</h4>'+unL.map(g=>'<span class="uchip">'+esc(g.name)+'</span>').join('')+unM.map(g=>'<span class="uchip maybe">'+esc(g.name)+'</span>').join('');
+  document.getElementById('unassigned').innerHTML=uh;
+  // rooming-list export (assigned only)
+  const cr=compute();const per=cr.perPP;const lab=(state.contrib==='full')?'full room cost split':(state.contrib==='0')?'you cover the rooms':('\u20ac'+state.contrib+'/night');
+  let out='ROOMING LIST \u00b7 Masseria Amastuola \u00b7 3 nights \u00b7 '+lab+'\n\n';
+  rooms.forEach(r=>{const occ=guests.filter(g=>g.room===r.id);if(!occ.length)return;out+=r.name+'\n';occ.forEach(g=>{const host=(g.name==='Me'||g.name==='Brian');const cost=host?'hosts':(per>0?eur(per):'\u2014');out+='  '+g.name+'  |  '+cost+'  |  '+(g.email||'(email?)')+'\n';});out+='\n';});
+  document.getElementById('exportbox').value=out;
+}
+function autofill(){
+  const open=[];rooms.forEach(r=>{const o=guests.filter(g=>g.room===r.id).length;for(let i=o;i<r.cap;i++)open.push(r.id);});
+  const pool=guests.filter(g=>g.room==null&&g.status==='likely').sort((a,b)=>((b.family?1:0)+(b.bridal?1:0))-((a.family?1:0)+(a.bridal?1:0)));
+  pool.forEach(g=>{const rid=open.shift();if(rid!=null){g.room=rid;saveGuest(g);}});
+  renderRooms();renderGuests();
+}
+
+/* guest handlers */
+document.getElementById('pane-guests').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=Number(b.dataset.id),g=guests.find(x=>x.id===id),a=b.dataset.act;
+  if(a==='status'&&g){g.status=b.dataset.val;saveGuest(g);}
+  else if(a==='family'&&g){g.family=!g.family;saveGuest(g);}
+  else if(a==='bridal'&&g){g.bridal=!g.bridal;saveGuest(g);}
+  else if(a==='remove'){guests=guests.filter(x=>x.id!==id);deleteGuest(id);}
+  else return;
+  renderGuests();renderRooms();});
+document.getElementById('pane-guests').addEventListener('input',e=>{const id=Number(e.target.dataset.id);const g=guests.find(x=>x.id===id);if(!g)return;if(e.target.classList.contains('gname'))g.name=e.target.value;else if(e.target.classList.contains('gemail'))g.email=e.target.value;else if(e.target.classList.contains('gnote'))g.note=e.target.value;});
+document.getElementById('pane-guests').addEventListener('change',e=>{if(e.target.classList.contains('gname')||e.target.classList.contains('gemail')||e.target.classList.contains('gnote')){const id=Number(e.target.dataset.id),g=guests.find(x=>x.id===id);if(g)saveGuest(g);renderRooms();}});
+function addGuest(){const i=document.getElementById('newguest'),n=i.value.trim();if(!n)return;const id=guests.reduce((m,g)=>Math.max(m,g.id),0)+1;const ng={id,name:n,status:'likely',family:false,bridal:false,room:null};guests.push(ng);i.value='';saveGuest(ng);renderGuests();renderRooms();}
+document.getElementById('addguest').addEventListener('click',addGuest);
+document.getElementById('newguest').addEventListener('keydown',e=>{if(e.key==='Enter')addGuest();});
+document.getElementById('applybtn').addEventListener('click',()=>{const l=guests.filter(g=>g.status==='likely').length;state.guests=Math.max(30,Math.min(130,l));render();saveSettings();document.querySelector('.tab[data-tab="budget"]').click();window.scrollTo({top:0,behavior:'smooth'});});
+
+/* room handlers */
+document.getElementById('pane-rooms').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+  if(a==='cap-dec'){const r=rooms.find(x=>x.id===Number(b.dataset.room));if(r){r.cap=Math.max(1,r.cap-1);saveRoom(r);}}
+  else if(a==='cap-inc'){const r=rooms.find(x=>x.id===Number(b.dataset.room));if(r){r.cap++;saveRoom(r);}}
+  else if(a==='room-remove'){const rid=Number(b.dataset.room);guests.forEach(g=>{if(g.room===rid){g.room=null;saveGuest(g);}});rooms=rooms.filter(x=>x.id!==rid);deleteRoom(rid);}
+  else if(a==='unassign'){const g=guests.find(x=>x.id===Number(b.dataset.id));if(g){g.room=null;saveGuest(g);}}
+  else return;
+  renderRooms();renderGuests();});
+document.getElementById('pane-rooms').addEventListener('input',e=>{if(e.target.classList.contains('rname')){const r=rooms.find(x=>x.id===Number(e.target.dataset.room));if(r)r.name=e.target.value;}});
+document.getElementById('pane-rooms').addEventListener('change',e=>{
+  if(e.target.classList.contains('radd')){const rid=Number(e.target.dataset.room),gid=Number(e.target.value);if(gid){const g=guests.find(x=>x.id===gid);if(g){g.room=rid;saveGuest(g);}}renderRooms();renderGuests();}
+  else if(e.target.classList.contains('rname')){const r=rooms.find(x=>x.id===Number(e.target.dataset.room));if(r)saveRoom(r);renderGuests();}});
+document.getElementById('addroom').addEventListener('click',()=>{const id=rooms.reduce((m,r)=>Math.max(m,r.id),0)+1;const nr={id,name:'Room '+(rooms.length+1),cap:2};rooms.push(nr);saveRoom(nr);renderRooms();});
+document.getElementById('autofill').addEventListener('click',autofill);
+document.getElementById('copyexport').addEventListener('click',()=>{const t=document.getElementById('exportbox');t.select();try{document.execCommand('copy');}catch(e){}try{if(navigator.clipboard)navigator.clipboard.writeText(t.value);}catch(e){}const b=document.getElementById('copyexport');const o=b.textContent;b.textContent='Copied \u2713';setTimeout(()=>{b.textContent=o;},1500);});
+
+
+/* ============ VENDORS ============ */
+const VENDOR_LIST=[
+ {cat:'Florist',vendors:[
+   {name:'Caterina Florist',contact:'WhatsApp +39 351 647 0522 \u00b7 info@caterinaruggieri.com'},
+   {name:'Nunzia Guerino',contact:'+39 329 586 6389 \u00b7 info@nunziaguerinoflorist.it'},
+   {name:'Vincenzo Frascella',contact:'+39 099 731 4799'},
+   {name:'Francesco Guida',contact:'+39 392 868 1015'},
+   {name:"Zair'art flower deco",contact:'+39 349 542 0815 \u00b7 zairartflowerdeco@gmail.com'}]},
+ {cat:'Hairdresser',vendors:[
+   {name:'Nico Vinci',contact:'+39 099 696 2013'},
+   {name:'Tommaso Tristani',contact:'+39 345 989 5159 \u00b7 t.tristaniparrucchieri@gmail.com'}]},
+ {cat:'Make-up artist',vendors:[
+   {name:'Rossella Panarelli',contact:'+39 350 095 5824 \u00b7 rossellapan.mua@libero.it'},
+   {name:'Valentina Galizia',contact:'+39 347 894 0231'},
+   {name:'Valentina Liddi',contact:'+39 327 549 1053 \u00b7 valentina.liddi@gmail.com'}]},
+ {cat:'Band / DJ',vendors:[
+   {name:'Rinaldi Events',contact:'+39 389 014 0132 \u00b7 rinaldiproduction.it'},
+   {name:'Mustacchi Brothers',contact:'+39 389 548 9206 \u00b7 info@mustacchibros.it'},
+   {name:'Just Band',contact:'+39 327 592 7596'},
+   {name:'Danny Howen',contact:'+39 340 401 7474'},
+   {name:'Alex Sisto DJ',contact:'+39 333 2755 135 \u00b7 alexsisto@hotmail.it'},
+   {name:'Spaghetti Brothers',contact:'+39 333 503 0498 \u00b7 nickypezzolla@gmail.com'}]},
+ {cat:'Photographer',vendors:[
+   {name:'Francesco Gravina',contact:'+39 329 112 2720 \u00b7 fotogravina.it'},
+   {name:'Francesco Francioso',contact:'+39 339 159 5956 \u00b7 francesco@francioso.it'},
+   {name:'Andrea Anthoi',contact:'+39 346 028 4563 \u00b7 info@andreantohifotografia.com'},
+   {name:'Antonio Luc\u00e0',contact:'+39 389 174 2857 \u00b7 aellephotography@gmail.com'},
+   {name:'Amarillis Fotografi',contact:'+39 349 239 9457 \u00b7 info@amarilisphotography.com'}]}
+];
+let vstate={};
+function vid(cat,name){return (cat+'-'+name).toLowerCase().replace(/[^a-z0-9]+/g,'-');}
+function renderVendors(){
+  let total=0,booked=0,contacted=0;
+  VENDOR_LIST.forEach(gp=>gp.vendors.forEach(v=>{total++;const st=(vstate[vid(gp.cat,v.name)]||{}).status;if(st==='booked')booked++;else if(st==='contacted')contacted++;}));
+  document.getElementById('vsum').innerHTML=total+' recommended \u00b7 <b>'+booked+'</b> booked \u00b7 '+contacted+' contacted';
+  document.getElementById('vendorbook').innerHTML=VENDOR_LIST.map(gp=>{
+    const cards=gp.vendors.map(v=>{const id=vid(gp.cat,v.name);const st=vstate[id]||{};const cur=st.status||'';
+      return '<div class="vcard"><div class="vname">'+esc(v.name)+'</div><div class="vcontact">'+esc(v.contact)+'</div><div class="vstatus"><button class="mini'+(cur==='maybe'?' on-vmaybe':'')+'" data-vact="status" data-vid="'+id+'" data-val="maybe">Maybe</button><button class="mini'+(cur==='contacted'?' on-vcontact':'')+'" data-vact="status" data-vid="'+id+'" data-val="contacted">Contacted</button><button class="mini'+(cur==='booked'?' on-vbook':'')+'" data-vact="status" data-vid="'+id+'" data-val="booked">Booked</button></div><textarea class="vnotes" data-vid="'+id+'" placeholder="Notes \u2014 quote, availability, vibe\u2026">'+esc(st.notes||'')+'</textarea></div>';
+    }).join('');
+    return '<div class="vgroup"><div class="vcat">'+esc(gp.cat)+'</div>'+cards+'</div>';
+  }).join('');
+}
+document.getElementById('pane-vendors').addEventListener('click',e=>{const b=e.target.closest('[data-vact]');if(!b)return;const id=b.dataset.vid;vstate[id]=vstate[id]||{status:'',notes:''};vstate[id].status=(vstate[id].status===b.dataset.val?'':b.dataset.val);saveVendor(id);renderVendors();});
+document.getElementById('pane-vendors').addEventListener('input',e=>{if(e.target.classList.contains('vnotes')){const id=e.target.dataset.vid;vstate[id]=vstate[id]||{status:'',notes:''};vstate[id].notes=e.target.value;}});
+document.getElementById('pane-vendors').addEventListener('change',e=>{if(e.target.classList.contains('vnotes'))saveVendor(e.target.dataset.vid);});
+
+
+/* ============ PLAN: checklist, payments, timeline ============ */
+let tasks=[
+ {id:1,text:'Pay \u20ac5,000 deposit to secure the date',before:400,done:true},
+ {id:2,text:'Book photographer',before:340,done:false},
+ {id:3,text:'Book florist',before:320,done:false},
+ {id:4,text:'Book band / DJ',before:320,done:false},
+ {id:5,text:'Book hair & makeup',before:250,done:false},
+ {id:6,text:'Decide ceremony type & start paperwork (Nulla Osta if Catholic)',before:220,done:false},
+ {id:7,text:'Send save-the-dates',before:240,done:false},
+ {id:8,text:'Menu tasting at Amastuola',before:120,done:false},
+ {id:9,text:'Collect guest emails & dietary needs',before:120,done:false},
+ {id:10,text:'Send invitations',before:110,done:false},
+ {id:11,text:'Build rooming list & send to Amastuola',before:75,done:false},
+ {id:12,text:'Pay room exclusivity',before:30,done:false},
+ {id:13,text:'Confirm final guest numbers',before:15,done:false},
+ {id:14,text:'Confirm & pay SIAE music licence',before:15,done:false},
+ {id:15,text:'Pay reception & events balance',before:14,done:false},
+ {id:16,text:'Settle extras at check-out',before:0,done:false}
+];
+let timeline=[
+ {day:'Day 1 \u00b7 Welcome dinner',items:[{time:'From 4 PM',act:'Guest check-in at Amastuola'},{time:'7:30 PM',act:'Welcome dinner among the vines'},{time:'10 PM',act:'Drinks & mingling'}]},
+ {day:'Day 2 \u00b7 Wedding',items:[{time:'Morning',act:'Hair & makeup'},{time:'4:30 PM',act:'Welcome drinks before ceremony'},{time:'5 PM',act:'Ceremony (olive grove / lawn)'},{time:'5:45 PM',act:'Aperitif dinner'},{time:'8 PM',act:'Dinner & speeches'},{time:'10 PM',act:'Cake & first dance'},{time:'Late',act:'Party \u2014 open bar (+ extension to ~3 AM)'}]},
+ {day:'Day 3 \u00b7 Pool party',items:[{time:'Late morning',act:'Pool party \u2014 BBQ / pizza brunch'},{time:'Afternoon',act:'Farewell & check-out'}]}
+];
+let payState={deposit:true};
+
+function ckDue(t){if(t.date)return new Date(t.date+'T00:00:00');const a=state.checkin.split('-').map(Number);const dt=new Date(a[0],a[1]-1,a[2]);dt.setDate(dt.getDate()-t.before);return dt;}
+function fmtD(dt){return WD[dt.getDay()]+' '+dt.getDate()+' '+MO[dt.getMonth()]+' '+dt.getFullYear();}
+function renderChecklist(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const sorted=tasks.slice().sort((a,b)=>ckDue(a)-ckDue(b));
+  const done=tasks.filter(t=>t.done).length;const next=sorted.find(t=>!t.done);
+  document.getElementById('cksum').innerHTML='<b>'+done+'</b> of '+tasks.length+' done'+(next?' \u00b7 next: '+esc(next.text)+' ('+fmtD(ckDue(next))+')':' \u00b7 all done \u2713');
+  document.getElementById('checklist').innerHTML=sorted.map(t=>{const due=ckDue(t);const over=!t.done&&due<today;return '<div class="task'+(t.done?' done':'')+(over?' overdue':'')+'"><button class="tcheck" data-ck="toggle" data-id="'+t.id+'">'+(t.done?'\u2713':'')+'</button><div class="tbody"><div class="ttext">'+esc(t.text)+'</div><div class="tdue">'+fmtD(due)+(over?' \u00b7 overdue':'')+'</div></div><button class="tdel" data-ck="del" data-id="'+t.id+'">\u00d7</button></div>';}).join('');
+}
+function renderPayments(){
+  const r=compute();let roomC=0,contrib=0,recep=0;
+  r.rows.forEach(x=>{if(x.l.indexOf('Room exclusivity')===0||x.l.indexOf('Extra beds')===0)roomC+=x.amt;else if(x.credit)contrib+=-x.amt;else recep+=x.amt;});
+  const excl=roomC-contrib,dep=5000,recRemain=recep-dep,T=r.total;
+  const lines=[{k:'deposit',n:'Deposit',w:'At booking',a:dep},{k:'exclusivity',n:'Room exclusivity',w:'1 month before \u00b7 guests billed for their share',a:excl},{k:'reception',n:'Reception & events',w:'2 weeks before \u00b7 deposit applied here',a:recRemain},{k:'extras',n:'Extras',w:'At check-out \u00b7 as incurred',a:null}];
+  let paid=0;lines.forEach(l=>{if(l.a!=null&&payState[l.k])paid+=l.a;});
+  document.getElementById('payments').innerHTML=lines.map(l=>'<div class="payline'+(payState[l.k]?' paid':'')+'">'+(l.a!=null?'<button class="paychk" data-pay="'+l.k+'">'+(payState[l.k]?'\u2713':'')+'</button>':'<span style="width:22px;flex:0 0 auto"></span>')+'<div class="payinfo"><div class="payname">'+l.n+'</div><div class="paywhen">'+l.w+'</div></div><div class="payamt">'+(l.a!=null?eur(l.a):'variable')+'</div></div>').join('')
+    +'<div class="paytot"><span>Venue-side total</span><span class="amt">'+eur(T)+'</span></div><div class="paytot" style="font-size:14px;padding-top:2px"><span style="color:var(--ink-soft)">Paid so far</span><span class="amt" style="color:var(--olive)">'+eur(paid)+'</span></div><div class="paytot" style="font-size:14px;padding-top:2px"><span style="color:var(--ink-soft)">Remaining</span><span class="amt">'+eur(Math.max(0,T-paid))+'</span></div>';
+}
+function renderTimeline(){
+  document.getElementById('timeline').innerHTML=timeline.map((d,di)=>{const items=d.items.map((it,ii)=>'<div class="titem"><input class="ttime" data-tl="time" data-d="'+di+'" data-i="'+ii+'" value="'+esc(it.time)+'"><input class="tact" data-tl="act" data-d="'+di+'" data-i="'+ii+'" value="'+esc(it.act)+'"><button data-tl="del" data-d="'+di+'" data-i="'+ii+'">\u00d7</button></div>').join('');return '<div class="tday"><div class="tdayhead"><input data-tl="day" data-d="'+di+'" value="'+esc(d.day)+'"></div>'+items+'<button class="tadd" data-tl="add" data-d="'+di+'">+ add item</button></div>';}).join('');
+}
+function renderPlan(){renderChecklist();renderPayments();renderTimeline();}
+planHook=()=>{renderChecklist();renderPayments();};
+document.getElementById('pane-plan').addEventListener('click',e=>{
+  const cb=e.target.closest('[data-ck]');if(cb){const id=Number(cb.dataset.id),t=tasks.find(x=>x.id===id);
+    if(cb.dataset.ck==='toggle'&&t){t.done=!t.done;saveTask(t);}
+    else if(cb.dataset.ck==='del'){tasks=tasks.filter(x=>x.id!==id);deleteTask(id);}
+    renderChecklist();return;}
+  const pb=e.target.closest('[data-pay]');if(pb){const k=pb.dataset.pay;payState[k]=!payState[k];savePayment(k);renderPayments();return;}
+  const tb=e.target.closest('[data-tl]');if(tb){const di=Number(tb.dataset.d),a=tb.dataset.tl,day=timeline[di];
+    if(a==='add'){const item={time:'',act:''};day.items.push(item);const pos=day.items.length-1;insertTimelineItem(day.day_id??di,item,pos).then(id=>{if(id!=null)item.row_id=id;});}
+    else if(a==='del'){const idx=Number(tb.dataset.i),removed=day.items.splice(idx,1)[0];if(removed&&removed.row_id!=null)deleteTimelineItem(removed.row_id);}
+    else return;
+    renderTimeline();return;}});
+document.getElementById('addtask').addEventListener('click',()=>{const i=document.getElementById('newtask'),n=i.value.trim();if(!n)return;const d=document.getElementById('newtaskdate').value||state.checkin;const id=tasks.reduce((m,t)=>Math.max(m,t.id),0)+1;const nt={id,text:n,date:d,done:false};tasks.push(nt);i.value='';document.getElementById('newtaskdate').value='';saveTask(nt);renderChecklist();});
+document.getElementById('pane-plan').addEventListener('input',e=>{const tb=e.target.closest('[data-tl]');if(!tb)return;const di=Number(tb.dataset.d),a=tb.dataset.tl;if(a==='day')timeline[di].day=e.target.value;else if(a==='time')timeline[di].items[Number(tb.dataset.i)].time=e.target.value;else if(a==='act')timeline[di].items[Number(tb.dataset.i)].act=e.target.value;});
+document.getElementById('pane-plan').addEventListener('change',e=>{
+  const tb=e.target.closest('[data-tl]');if(!tb)return;
+  const di=Number(tb.dataset.d),a=tb.dataset.tl,day=timeline[di];
+  if(a==='day')saveTimelineDay(day.day_id??di,day.day,di);
+  else if(a==='time'||a==='act'){const idx=Number(tb.dataset.i),item=day.items[idx];if(item&&item.row_id!=null)saveTimelineItem(item,day.day_id??di,idx);}
+});
+
+renderGuests();renderRooms();renderVendors();renderPlan();initAuth();
+
+</script>
+</body>
+</html>

@@ -159,6 +159,18 @@
   .task.done .tcheck{background:var(--olive);border-color:var(--olive)}
   .tbody{flex:1;min-width:0}
 
+  /* ─── Notes tab ─── */
+  .ncompose{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+  .ncompose textarea{width:100%;font-family:var(--body);font-size:14px;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);resize:vertical;min-height:70px;line-height:1.5}
+  .ncompose button{align-self:flex-end;font-family:var(--body);font-size:13px;font-weight:600;padding:10px 20px;border:none;border-radius:9px;background:var(--olive);color:#fff;cursor:pointer}
+  .ncompose button:hover{background:#4a5a37}
+  .ncompose button:disabled{opacity:.5;cursor:not-allowed}
+  .notecard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 40px 12px 14px;margin-bottom:8px;position:relative}
+  .notecard .nbody{font-size:14px;line-height:1.55;white-space:pre-wrap;color:var(--ink)}
+  .notecard .nmeta{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:6px;letter-spacing:.02em}
+  .notecard .ndel{position:absolute;top:6px;right:6px;border:none;background:transparent;color:var(--ink-soft);font-size:17px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px}
+  .notecard .ndel:hover{color:var(--clay)}
+
   /* ─── Auth gate ─── */
   #authgate{position:fixed;inset:0;background:rgba(38,43,35,.72);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
   #authgate .card{background:var(--surface);border-radius:16px;padding:28px 26px;max-width:340px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25)}
@@ -236,6 +248,7 @@
     <button class="tab" data-tab="rooms">Rooms</button>
     <button class="tab" data-tab="vendors">Vendors</button>
     <button class="tab" data-tab="plan">Plan</button>
+    <button class="tab" data-tab="notes">Notes</button>
   </div>
 
   <div class="tabpane show" id="pane-budget">
@@ -426,6 +439,17 @@
     <div id="timeline"></div>
   </div>
 
+  <div class="tabpane" id="pane-notes">
+    <div class="glab" style="margin-top:8px">Notes log</div>
+    <div class="psum" id="nsum"></div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Random thoughts, questions, decisions — anything worth remembering. Each entry stamps date + who wrote it.</div>
+    <div class="ncompose">
+      <textarea id="newnote" placeholder="What's on your mind? (⌘↵ to log)" rows="3"></textarea>
+      <button id="addnote">Log note</button>
+    </div>
+    <div id="notelist"></div>
+  </div>
+
 </div>
 
 <script>
@@ -513,6 +537,16 @@ function deleteTimelineItem(row_id) {
 }
 function savePayment(key) {
   db.from('payments').upsert({ key, paid: !!payState[key] }).then(_dbErr('savePayment'));
+}
+async function saveNote(body) {
+  const { data, error } = await db.from('notes').insert({
+    body, author_email: _me?.email ?? null, author_id: _me?.id ?? null
+  }).select().single();
+  if (error) { console.warn('[db] saveNote', error.message); return null; }
+  return data;
+}
+function deleteNote(id) {
+  db.from('notes').delete().eq('id', id).then(_dbErr('deleteNote'));
 }
 let _saveSettingsT = null;
 function saveSettings() {
@@ -645,7 +679,7 @@ document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{
 render();
 
 /* ============ TABS ============ */
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['budget','guests','rooms','vendors','plan'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['budget','guests','rooms','vendors','plan','notes'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
 
 /* ============ PLANNER: guests + rooms ============ */
 function esc(x){return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -730,13 +764,15 @@ function buildGuests(){return [
 function buildRooms(){return [{id:101,name:'101 · Ovile Suite',cap:2,cat:'Suite',feat:'ground floor · Jacuzzi'},{id:107,name:'107 · Suite Deluxe',cap:3,cat:'Suite',feat:'ground floor · Jacuzzi'},{id:108,name:'108 · Suite Superior',cap:5,cat:'Suite',feat:'ground floor · two separate rooms'},{id:204,name:'204 · Padronale Suite',cap:2,cat:'Suite',feat:'first floor · bathtub · private terrace'},{id:102,name:'102 · Deluxe',cap:3,cat:'Deluxe',feat:'ground floor'},{id:103,name:'103 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor · twin option'},{id:104,name:'104 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor'},{id:105,name:'105 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor'},{id:106,name:'106 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor · twin option'},{id:109,name:'109 · Deluxe',cap:3,cat:'Deluxe',feat:'ground floor · twin option'},{id:201,name:'201 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor'},{id:202,name:'202 · Exclusive',cap:2,cat:'Exclusive',feat:'first floor'},{id:203,name:'203 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option'},{id:205,name:'205 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'},{id:206,name:'206 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option · balcony'},{id:207,name:'207 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'},{id:208,name:'208 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option · balcony'},{id:209,name:'209 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'}];}
 let guests=buildGuests();
 let rooms=buildRooms();
+let notes=[];
+let _me=null;
 
 /* Left as a no-op: mutation sites now call the per-entity save*() helpers
    at the top of the script. Kept so any stray reference doesn't throw. */
 function persist(){}
 async function hydrate(){
   try {
-    const [gr, rr, vr, tr, td, ti, pr, sr] = await Promise.all([
+    const [gr, rr, vr, tr, td, ti, pr, sr, nr] = await Promise.all([
       db.from('guests').select('*').order('position'),
       db.from('rooms').select('*').order('position'),
       db.from('vendors').select('*'),
@@ -744,7 +780,8 @@ async function hydrate(){
       db.from('timeline_days').select('*').order('position'),
       db.from('timeline_items').select('*').order('position'),
       db.from('payments').select('*'),
-      db.from('settings').select('*').eq('id',1).maybeSingle()
+      db.from('settings').select('*').eq('id',1).maybeSingle(),
+      db.from('notes').select('*').order('created_at', {ascending:false})
     ]);
     if (rr.data && rr.data.length) {
       rooms = rr.data.map(r => ({id:r.id, name:r.name, cap:r.cap, cat:r.category, feat:r.features}));
@@ -782,6 +819,12 @@ async function hydrate(){
     if (sr.data && sr.data.data) {
       Object.assign(state, sr.data.data);
     }
+    if (nr.data) {
+      notes = nr.data.map(n => ({
+        id:n.id, body:n.body,
+        author_email:n.author_email, created_at:n.created_at
+      }));
+    }
   } catch (e) {
     console.warn('[db] hydrate error — keeping in-memory defaults', e);
   }
@@ -791,6 +834,7 @@ async function hydrate(){
   renderRooms();
   renderVendors();
   renderPlan();
+  renderNotes();
 }
 
 /* Realtime: any change to a subscribed table triggers a full re-hydrate.
@@ -798,7 +842,7 @@ async function hydrate(){
 let _channels = [];
 function subscribeRealtime() {
   unsubscribeRealtime();
-  ['guests','rooms','vendors','tasks','timeline_days','timeline_items','payments','settings'].forEach(t => {
+  ['guests','rooms','vendors','tasks','timeline_days','timeline_items','payments','settings','notes'].forEach(t => {
     const ch = db.channel('rt-'+t)
       .on('postgres_changes', {event:'*', schema:'public', table:t}, () => hydrate())
       .subscribe();
@@ -823,7 +867,9 @@ function showAuthGate() {
   document.getElementById('signout').style.display = 'none';
   unsubscribeRealtime();
 }
-function unlockApp() {
+async function unlockApp() {
+  const { data:{ session } } = await db.auth.getSession();
+  _me = session?.user ? { id: session.user.id, email: session.user.email } : null;
   document.getElementById('authgate').style.display = 'none';
   document.getElementById('signout').style.display = 'block';
   hydrate();
@@ -1013,6 +1059,54 @@ function renderTimeline(){
 }
 function renderPlan(){renderChecklist();renderPayments();renderTimeline();}
 planHook=()=>{renderChecklist();renderPayments();};
+
+/* ============ NOTES ============ */
+function fmtNoteWhen(iso){
+  const dt=new Date(iso),now=new Date();
+  const startOf=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x;};
+  const diffDays=Math.round((startOf(now)-startOf(dt))/86400000);
+  const time=dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  let day;
+  if(diffDays===0)day='Today';
+  else if(diffDays===1)day='Yesterday';
+  else day=dt.getDate()+' '+MO[dt.getMonth()]+(dt.getFullYear()!==now.getFullYear()?' '+dt.getFullYear():'');
+  return day+' · '+time;
+}
+function noteAuthor(email){return email?email.split('@')[0]:'someone';}
+function renderNotes(){
+  const c=notes.length;
+  document.getElementById('nsum').innerHTML='<b>'+c+'</b> note'+(c===1?'':'s');
+  document.getElementById('notelist').innerHTML=notes.map(n=>
+    '<div class="notecard"><button class="ndel" data-nid="'+n.id+'" title="Delete">×</button>'+
+    '<div class="nbody">'+esc(n.body)+'</div>'+
+    '<div class="nmeta">'+esc(fmtNoteWhen(n.created_at))+' · '+esc(noteAuthor(n.author_email))+'</div>'+
+    '</div>'
+  ).join('');
+}
+async function submitNote(){
+  const ta=document.getElementById('newnote'),btn=document.getElementById('addnote');
+  const body=ta.value.trim();
+  if(!body)return;
+  btn.disabled=true;
+  const saved=await saveNote(body);
+  btn.disabled=false;
+  if(saved){
+    notes.unshift({id:saved.id,body:saved.body,author_email:saved.author_email,created_at:saved.created_at});
+    ta.value='';
+    renderNotes();
+  }
+}
+document.getElementById('addnote').addEventListener('click',submitNote);
+document.getElementById('newnote').addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();submitNote();}
+});
+document.getElementById('pane-notes').addEventListener('click',e=>{
+  const b=e.target.closest('.ndel');if(!b)return;
+  const id=Number(b.dataset.nid);
+  notes=notes.filter(n=>n.id!==id);
+  deleteNote(id);
+  renderNotes();
+});
 document.getElementById('pane-plan').addEventListener('click',e=>{
   const cb=e.target.closest('[data-ck]');if(cb){const id=Number(cb.dataset.id),t=tasks.find(x=>x.id===id);
     if(cb.dataset.ck==='toggle'&&t){t.done=!t.done;saveTask(t);}
@@ -1033,7 +1127,7 @@ document.getElementById('pane-plan').addEventListener('change',e=>{
   else if(a==='time'||a==='act'){const idx=Number(tb.dataset.i),item=day.items[idx];if(item&&item.row_id!=null)saveTimelineItem(item,day.day_id??di,idx);}
 });
 
-renderGuests();renderRooms();renderVendors();renderPlan();initAuth();
+renderGuests();renderRooms();renderVendors();renderPlan();renderNotes();initAuth();
 
 </script>
 </body>

@@ -427,8 +427,8 @@
    Fill these in from Supabase → Project Settings → API. The anon key is safe
    to commit: row-level security is on and public signup is disabled, so only
    the two accounts you create by hand can read or write. */
-const SUPABASE_URL      = 'https://YOUR-PROJECT-REF.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+const SUPABASE_URL      = 'https://tzzgnzgxaaztvavmgtlx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6emduemd4YWF6dHZhdm1ndGx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3NTg2NjksImV4cCI6MjEwNTMzNDY2OX0.my2RmvukVPveeCNUvByHoVUAUsjTgLNe__aXxbysz7I';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* Per-entity save helpers. Each mutates the DB in the background; the

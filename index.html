@@ -183,8 +183,24 @@
   #authgate button:hover{background:#4a5a37}
   #autherr{color:var(--clay);font-size:12.5px;min-height:16px;margin-top:8px}
   .whead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px}
+  .whead-right{display:flex;gap:6px;align-items:center}
   #signout{display:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
   #signout:hover{color:var(--ink);border-color:var(--brass)}
+  #fxtoggle{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;letter-spacing:.05em}
+  #fxtoggle:hover{color:var(--ink);border-color:var(--brass)}
+  #fxtoggle .active-cur{color:var(--brass)}
+  /* ─── Countdown ─── */
+  .cdn{font-family:var(--display);font-style:italic;font-size:15px;color:var(--ink-soft);margin:0 0 14px;line-height:1.35}
+  .cdn b{font-family:var(--mono);font-style:normal;font-size:19px;font-weight:700;color:var(--brass);letter-spacing:-.01em;margin-right:3px}
+  /* ─── Travel tab ─── */
+  #pane-travel h3{font-family:var(--display);font-weight:600;font-size:18px;margin:20px 0 8px;color:var(--ink)}
+  #pane-travel ul{margin:0 0 10px 20px}
+  #pane-travel li{font-size:14px;line-height:1.6;margin-bottom:4px}
+  #pane-travel p{font-size:14px;line-height:1.55;margin-bottom:10px}
+  .travelcard{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:8px}
+  .travelcard b{font-family:var(--display);font-size:16px;font-weight:600;display:block;margin-bottom:2px}
+  .travelcard .meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+  .travelcard .desc{font-size:13.5px;color:var(--ink);margin-top:4px;line-height:1.5}
   /* Prevent iOS Safari auto-zoom on input focus (anything < 16px triggers it) */
   @media (hover:none) and (pointer:coarse){
     input, select, textarea { font-size:16px }
@@ -237,17 +253,23 @@
 
   <div class="whead">
     <div class="kicker">Amastuola · Puglia · our venue ♥</div>
-    <button id="signout" title="Sign out">sign out</button>
+    <div class="whead-right">
+      <button id="fxtoggle" title="Toggle EUR/USD"><span class="active-cur">€</span> / $</button>
+      <button id="signout" title="Sign out">sign out</button>
+    </div>
   </div>
   <h1>Our wedding at <em>Amastuola.</em></h1>
   <p class="sub">Budget, guests, rooms &amp; vendors — your wedding planning HQ. 2028 pricing. Edits save automatically.</p>
+  <div id="countdown" class="cdn"></div>
 
   <div class="tabs">
     <button class="tab active" data-tab="budget">Budget</button>
     <button class="tab" data-tab="guests">Guests</button>
     <button class="tab" data-tab="rooms">Rooms</button>
+    <button class="tab" data-tab="seating">Seating</button>
     <button class="tab" data-tab="vendors">Vendors</button>
     <button class="tab" data-tab="plan">Plan</button>
+    <button class="tab" data-tab="travel">Travel</button>
     <button class="tab" data-tab="notes">Notes</button>
   </div>
 
@@ -397,7 +419,7 @@
     <div class="glab" style="margin-top:8px">Guest list</div>
     <div class="psum" id="gsum"></div>
     <button class="applybtn" id="applybtn">Use likely count in budget &rarr;</button>
-    <div class="addrow"><input id="newguest" placeholder="Add a guest…"><button id="addguest">Add</button></div>
+    <div class="addrow"><input id="newguest" placeholder="Add a guest…"><button id="addguest">Add</button><button class="btn ghost" id="dlcsv" title="Download the guest list as CSV">CSV</button></div>
     <div id="guestlist"></div>
     <div class="note" style="margin-top:10px">Tap a name to rename. Room numbers come from the Rooms tab. Everything here saves automatically.</div>
   </div>
@@ -439,6 +461,44 @@
     <div id="timeline"></div>
   </div>
 
+  <div class="tabpane" id="pane-seating">
+    <div class="glab" style="margin-top:8px">Reception seating</div>
+    <div class="psum" id="ssum"></div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Who sits with whom at the wedding dinner. Separate from room assignments — a guest can be at a room and at a table both.</div>
+    <div class="addrow"><button class="btn" id="addtable">+ Add table</button><button class="btn ghost" id="autoseat">Auto-seat unseated</button></div>
+    <div id="unseated" class="unassigned"></div>
+    <div id="tablelist"></div>
+  </div>
+
+  <div class="tabpane" id="pane-travel">
+    <div class="glab" style="margin-top:8px">Getting to Amastuola</div>
+    <div class="note" style="margin-top:0;margin-bottom:16px">Masseria Amastuola · Contrada Ceramelli, 74015 Crispiano TA, Puglia · <a href="https://maps.apple.com/?q=Masseria+Amastuola" target="_blank" style="color:var(--brass)">Open in Maps ↗</a></div>
+
+    <h3>Nearest airports</h3>
+    <div class="travelcard"><b>Brindisi (BDS)</b><div class="meta">~45 min drive · closest</div><div class="desc">Best for most guests. Rome/Munich/Zurich hubs connect here. Small airport — easy in/out.</div></div>
+    <div class="travelcard"><b>Bari (BRI)</b><div class="meta">~90 min drive · more connections</div><div class="desc">More direct international flights (London, Amsterdam, Paris). Worth the extra drive if it saves a layover.</div></div>
+    <div class="travelcard"><b>Naples (NAP)</b><div class="meta">~4 hr drive · only if it's much cheaper</div><div class="desc">Sometimes cheaper transatlantic. Rent a car and make it a road trip through Basilicata.</div></div>
+
+    <h3>Airport → Amastuola</h3>
+    <ul>
+      <li><b>Rental car</b> (recommended) — Puglia is best by car anyway. Book early; wagon/SUV if you're a group.</li>
+      <li><b>Private transfer via the venue</b> — Amastuola can arrange. Ask for a 2028 quote; historically ~€130 from Brindisi, ~€180 from Bari.</li>
+      <li><b>Train + taxi</b> — Trenitalia to Taranto, then ~20 min taxi. Slower and awkward with luggage.</li>
+    </ul>
+
+    <h3>For guests not staying at Amastuola</h3>
+    <p>The masseria sleeps ~49 across 18 rooms. Overflow guests can stay nearby — Walter (venue owner) specifically recommends:</p>
+    <div class="travelcard"><b>B&amp;B Nacorè</b><div class="meta">Walter's own property · closest</div></div>
+    <div class="travelcard"><b>B&amp;B Essenza</b></div>
+    <div class="travelcard"><b>B&amp;B Sotto la volta</b></div>
+    <p style="margin-top:12px">Other search areas: <b>Massafra</b>, <b>Crispiano</b>, <b>Martina Franca</b> (all &lt;30 min).</p>
+
+    <h3>Wedding-day transport</h3>
+    <p>Confirm with Amastuola whether they'll arrange a shuttle for off-site guests to and from the reception. Budget ~€500 for a small coach round-trip.</p>
+
+    <div class="note" style="margin-top:20px;color:var(--brass);font-size:12.5px">✏️ Edit this tab directly in <code>index.html</code> and push to update — content is intentionally hardcoded (rarely changes).</div>
+  </div>
+
   <div class="tabpane" id="pane-notes">
     <div class="glab" style="margin-top:8px">Notes log</div>
     <div class="psum" id="nsum"></div>
@@ -471,7 +531,8 @@ function saveGuest(g) {
   db.from('guests').upsert({
     id: g.id, name: g.name, status: g.status,
     family: !!g.family, bridal: !!g.bridal,
-    room_id: g.room ?? null, email: g.email ?? null, note: g.note ?? null,
+    room_id: g.room ?? null, dinner_table: g.dinnerTable ?? null,
+    email: g.email ?? null, note: g.note ?? null,
     position: guests.indexOf(g)
   }).then(_dbErr('saveGuest'));
 }
@@ -487,6 +548,14 @@ function saveRoom(r) {
 }
 function deleteRoom(id) {
   db.from('rooms').delete().eq('id', id).then(_dbErr('deleteRoom'));
+}
+function saveDinnerTable(t) {
+  db.from('dinner_tables').upsert({
+    id: t.id, name: t.name, seats: t.seats, position: dinnerTables.indexOf(t)
+  }).then(_dbErr('saveDinnerTable'));
+}
+function deleteDinnerTable(id) {
+  db.from('dinner_tables').delete().eq('id', id).then(_dbErr('deleteDinnerTable'));
 }
 let _vendorMeta = null;
 function _ensureVendorMeta() {
@@ -556,7 +625,31 @@ function saveSettings() {
   }, 300);
 }
 
-const eur=n=>'€'+Math.round(n).toLocaleString('en-US');
+let _fxRate = null;  // populated by loadFxRate(); EUR→USD conversion rate
+const eur = n => {
+  if (state && state.currency === 'USD' && _fxRate) return '$' + Math.round(n * _fxRate).toLocaleString('en-US');
+  return '€' + Math.round(n).toLocaleString('en-US');
+};
+async function loadFxRate() {
+  try {
+    const cached = localStorage.getItem('pp_fx_eur_usd');
+    if (cached) {
+      const p = JSON.parse(cached);
+      if (Date.now() - p.t < 86400000) { _fxRate = p.rate; return; }
+    }
+    const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=USD');
+    const j = await r.json();
+    if (j && j.rates && j.rates.USD) {
+      _fxRate = j.rates.USD;
+      localStorage.setItem('pp_fx_eur_usd', JSON.stringify({t: Date.now(), rate: _fxRate}));
+    }
+  } catch (e) { console.warn('[fx] fetch failed', e); }
+}
+function updateFxLabel() {
+  const el = document.getElementById('fxtoggle'); if (!el) return;
+  const cur = (state && state.currency) || 'EUR';
+  el.innerHTML = cur === 'EUR' ? '<span class="active-cur">€</span> / $' : '€ / <span class="active-cur">$</span>';
+}
 const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 /* 2028 nightly room-exclusivity prices (from Amastuola's availability sheet) */
@@ -570,7 +663,7 @@ let A_STAYING=48,A_EXTRA_BEDS=12; // staying guests & extra beds in use, synced 
 let planHook=null; // lets the Plan tab refresh when the budget/date changes
 const VENDORS=[{id:'planner',label:'Wedding planner',max:15000,def:7500},{id:'photo',label:'Photo + video',max:12000,def:6000},{id:'florals',label:'Florals & décor',max:12000,def:5000},{id:'music',label:'Music · DJ or band',max:8000,def:3500},{id:'hmu',label:'Hair & makeup',max:4000,def:1500},{id:'transport',label:'Guest transport',max:6000,def:2000},{id:'other',label:'Attire, rings & buffer',max:15000,def:1000}];
 
-let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0,vendorBudgets:Object.fromEntries(VENDORS.map(v=>[v.id,v.def]))};
+let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0,currency:'EUR',vendorBudgets:Object.fromEntries(VENDORS.map(v=>[v.id,v.def]))};
 const PRESETS={rec:{menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0},
   cheap:{menu:'calaprice',abar:'none',ext:'0',welcome:'none',brunch:'off',ceremony:'symbolic',olive:'off',contrib:'150',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0},
   splurge:{menu:'centosassi',abar:'ck4',ext:'2',welcome:'winedinner',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'on',dessert:'on',icecream:'on',rum:'on',prosecco:'on',fireworks:'on',kids:0}};
@@ -665,7 +758,38 @@ function render(){
   document.querySelectorAll('[data-group]').forEach(grp=>{const k=grp.dataset.group;grp.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.value===String(state[k])));});
   document.getElementById('checkin').value=state.checkin;document.getElementById('guests').value=state.guests;document.getElementById('kids').value=state.kids;document.getElementById('abar').value=state.abar;
   if(planHook)planHook();
+  renderCountdown();
 }
+function renderCountdown(){
+  const el=document.getElementById('countdown');if(!el||!state.checkin)return;
+  const d=new Date(state.checkin+'T16:00:00');
+  const now=new Date();
+  const days=Math.ceil((d-now)/86400000);
+  if(days>1)el.innerHTML='<b>'+days+'</b> days until we say sì in Puglia';
+  else if(days===1)el.innerHTML='<b>1</b> day to go ♥';
+  else if(days===0)el.innerHTML='<b>Today ♥</b>';
+  else el.innerHTML='<b>'+Math.abs(days)+'</b> day'+(Math.abs(days)===1?'':'s')+' since Amastuola ♥';
+}
+function downloadGuestCSV(){
+  const rows=[['id','name','status','family','bridal','room','email','note']];
+  guests.forEach(g=>{
+    const rn=g.room!=null?(rooms.find(r=>r.id===g.room)||{}).name||'':'';
+    rows.push([g.id,g.name,g.status,g.family?'yes':'no',g.bridal?'yes':'no',rn,g.email||'',g.note||'']);
+  });
+  const esc=c=>{const s=String(c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='planning-piperato-guests-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+document.getElementById('dlcsv').addEventListener('click',downloadGuestCSV);
+document.getElementById('fxtoggle').addEventListener('click',()=>{
+  state.currency=state.currency==='USD'?'EUR':'USD';
+  updateFxLabel();render();renderRooms();renderPlan();saveSettings();
+});
 
 document.querySelectorAll('[data-group]').forEach(grp=>{const k=grp.dataset.group;grp.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{state[k]=c.dataset.value;render();saveSettings();}));});
 document.getElementById('checkin').addEventListener('change',e=>{state.checkin=e.target.value;render();saveSettings();});
@@ -679,7 +803,7 @@ document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{
 render();
 
 /* ============ TABS ============ */
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['budget','guests','rooms','vendors','plan','notes'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['budget','guests','rooms','seating','vendors','plan','travel','notes'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
 
 /* ============ PLANNER: guests + rooms ============ */
 function esc(x){return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -764,6 +888,7 @@ function buildGuests(){return [
 function buildRooms(){return [{id:101,name:'101 · Ovile Suite',cap:2,cat:'Suite',feat:'ground floor · Jacuzzi'},{id:107,name:'107 · Suite Deluxe',cap:3,cat:'Suite',feat:'ground floor · Jacuzzi'},{id:108,name:'108 · Suite Superior',cap:5,cat:'Suite',feat:'ground floor · two separate rooms'},{id:204,name:'204 · Padronale Suite',cap:2,cat:'Suite',feat:'first floor · bathtub · private terrace'},{id:102,name:'102 · Deluxe',cap:3,cat:'Deluxe',feat:'ground floor'},{id:103,name:'103 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor · twin option'},{id:104,name:'104 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor'},{id:105,name:'105 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor'},{id:106,name:'106 · Deluxe',cap:2,cat:'Deluxe',feat:'ground floor · twin option'},{id:109,name:'109 · Deluxe',cap:3,cat:'Deluxe',feat:'ground floor · twin option'},{id:201,name:'201 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor'},{id:202,name:'202 · Exclusive',cap:2,cat:'Exclusive',feat:'first floor'},{id:203,name:'203 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option'},{id:205,name:'205 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'},{id:206,name:'206 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option · balcony'},{id:207,name:'207 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'},{id:208,name:'208 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · twin option · balcony'},{id:209,name:'209 · Exclusive',cap:3,cat:'Exclusive',feat:'first floor · balcony'}];}
 let guests=buildGuests();
 let rooms=buildRooms();
+let dinnerTables=[];
 let notes=[];
 let _me=null;
 
@@ -772,7 +897,7 @@ let _me=null;
 function persist(){}
 async function hydrate(){
   try {
-    const [gr, rr, vr, tr, td, ti, pr, sr, nr] = await Promise.all([
+    const [gr, rr, vr, tr, td, ti, pr, sr, nr, dtr] = await Promise.all([
       db.from('guests').select('*').order('position'),
       db.from('rooms').select('*').order('position'),
       db.from('vendors').select('*'),
@@ -781,7 +906,8 @@ async function hydrate(){
       db.from('timeline_items').select('*').order('position'),
       db.from('payments').select('*'),
       db.from('settings').select('*').eq('id',1).maybeSingle(),
-      db.from('notes').select('*').order('created_at', {ascending:false})
+      db.from('notes').select('*').order('created_at', {ascending:false}),
+      db.from('dinner_tables').select('*').order('position')
     ]);
     if (rr.data && rr.data.length) {
       rooms = rr.data.map(r => ({id:r.id, name:r.name, cap:r.cap, cat:r.category, feat:r.features}));
@@ -790,8 +916,12 @@ async function hydrate(){
       guests = gr.data.map(g => ({
         id:g.id, name:g.name, status:g.status,
         family:!!g.family, bridal:!!g.bridal,
-        room:g.room_id, email:g.email, note:g.note
+        room:g.room_id, dinnerTable:g.dinner_table,
+        email:g.email, note:g.note
       }));
+    }
+    if (dtr.data && dtr.data.length) {
+      dinnerTables = dtr.data.map(t => ({id:t.id, name:t.name, seats:t.seats}));
     }
     if (vr.data && vr.data.length) {
       vstate = {};
@@ -829,9 +959,11 @@ async function hydrate(){
     console.warn('[db] hydrate error — keeping in-memory defaults', e);
   }
   syncSlidersFromState();
+  updateFxLabel();
   render();
   renderGuests();
   renderRooms();
+  renderSeating();
   renderVendors();
   renderPlan();
   renderNotes();
@@ -842,7 +974,7 @@ async function hydrate(){
 let _channels = [];
 function subscribeRealtime() {
   unsubscribeRealtime();
-  ['guests','rooms','vendors','tasks','timeline_days','timeline_items','payments','settings','notes'].forEach(t => {
+  ['guests','rooms','vendors','tasks','timeline_days','timeline_items','payments','settings','notes','dinner_tables'].forEach(t => {
     const ch = db.channel('rt-'+t)
       .on('postgres_changes', {event:'*', schema:'public', table:t}, () => hydrate())
       .subscribe();
@@ -961,6 +1093,61 @@ document.getElementById('pane-rooms').addEventListener('change',e=>{
 document.getElementById('addroom').addEventListener('click',()=>{const id=rooms.reduce((m,r)=>Math.max(m,r.id),0)+1;const nr={id,name:'Room '+(rooms.length+1),cap:2};rooms.push(nr);saveRoom(nr);renderRooms();});
 document.getElementById('autofill').addEventListener('click',autofill);
 document.getElementById('copyexport').addEventListener('click',()=>{const t=document.getElementById('exportbox');t.select();try{document.execCommand('copy');}catch(e){}try{if(navigator.clipboard)navigator.clipboard.writeText(t.value);}catch(e){}const b=document.getElementById('copyexport');const o=b.textContent;b.textContent='Copied \u2713';setTimeout(()=>{b.textContent=o;},1500);});
+
+
+/* ============ SEATING ============ */
+function renderSeating(){
+  const totalSeats=dinnerTables.reduce((s,t)=>s+t.seats,0);
+  const seated=guests.filter(g=>g.dinnerTable!=null).length;
+  const off=guests.filter(g=>g.status==='likely'&&g.dinnerTable==null).length;
+  document.getElementById('ssum').innerHTML=dinnerTables.length+' tables &middot; '+totalSeats+' seats &middot; <b>'+seated+'</b> seated &middot; '+Math.max(0,totalSeats-seated)+' open &middot; '+off+' likely still unseated';
+  const un=guests.filter(g=>g.dinnerTable==null&&(g.status==='likely'||g.status==='maybe'));
+  document.getElementById('tablelist').innerHTML=dinnerTables.map(t=>{
+    const occ=guests.filter(g=>g.dinnerTable===t.id),over=occ.length>t.seats;
+    const chips=occ.map(g=>'<span class="occ">'+esc(g.name)+'<button data-sact="unseat" data-id="'+g.id+'">×</button></span>').join('')||'<span class="empty">empty</span>';
+    const opts=un.map(g=>'<option value="'+g.id+'">'+esc(g.name)+'</option>').join('');
+    return '<div class="room'+(over?' over':'')+'"><div class="rtop"><input class="stname" data-tid="'+t.id+'" value="'+esc(t.name)+'"><div class="cap"><button data-sact="cap-dec" data-tid="'+t.id+'">−</button><span>'+t.seats+'</span><button data-sact="cap-inc" data-tid="'+t.id+'">+</button></div><button class="rx" data-sact="table-remove" data-tid="'+t.id+'">×</button></div><div class="roccupants">'+chips+'</div><select class="stadd" data-tid="'+t.id+'"><option value="">+ add guest…</option>'+opts+'</select><div class="rfoot">'+occ.length+' / '+t.seats+(over?' <span class="warn">over capacity</span>':'')+'</div></div>';
+  }).join('');
+  const unL=guests.filter(g=>g.dinnerTable==null&&g.status==='likely');
+  const unM=guests.filter(g=>g.dinnerTable==null&&g.status==='maybe');
+  let uh;
+  if(!unL.length&&!unM.length)uh='<h4>Everyone attending has a seat ✓</h4>';
+  else uh='<h4>Not yet seated — '+unL.length+' likely, '+unM.length+' maybe</h4>'+unL.map(g=>'<span class="uchip">'+esc(g.name)+'</span>').join('')+unM.map(g=>'<span class="uchip maybe">'+esc(g.name)+'</span>').join('');
+  document.getElementById('unseated').innerHTML=uh;
+}
+document.getElementById('addtable').addEventListener('click',()=>{
+  const id=dinnerTables.reduce((m,t)=>Math.max(m,t.id),0)+1;
+  const nt={id,name:'Table '+(dinnerTables.length+1),seats:8};
+  dinnerTables.push(nt);saveDinnerTable(nt);renderSeating();
+});
+document.getElementById('autoseat').addEventListener('click',()=>{
+  const open=[];dinnerTables.forEach(t=>{const o=guests.filter(g=>g.dinnerTable===t.id).length;for(let i=o;i<t.seats;i++)open.push(t.id);});
+  const pool=guests.filter(g=>g.dinnerTable==null&&g.status==='likely').sort((a,b)=>((b.family?1:0)+(b.bridal?1:0))-((a.family?1:0)+(a.bridal?1:0)));
+  pool.forEach(g=>{const tid=open.shift();if(tid!=null){g.dinnerTable=tid;saveGuest(g);}});
+  renderSeating();
+});
+document.getElementById('pane-seating').addEventListener('click',e=>{
+  const b=e.target.closest('[data-sact]');if(!b)return;
+  const a=b.dataset.sact;
+  if(a==='cap-dec'){const t=dinnerTables.find(x=>x.id===Number(b.dataset.tid));if(t){t.seats=Math.max(1,t.seats-1);saveDinnerTable(t);}}
+  else if(a==='cap-inc'){const t=dinnerTables.find(x=>x.id===Number(b.dataset.tid));if(t){t.seats++;saveDinnerTable(t);}}
+  else if(a==='table-remove'){const tid=Number(b.dataset.tid);guests.forEach(g=>{if(g.dinnerTable===tid){g.dinnerTable=null;saveGuest(g);}});dinnerTables=dinnerTables.filter(x=>x.id!==tid);deleteDinnerTable(tid);}
+  else if(a==='unseat'){const g=guests.find(x=>x.id===Number(b.dataset.id));if(g){g.dinnerTable=null;saveGuest(g);}}
+  else return;
+  renderSeating();
+});
+document.getElementById('pane-seating').addEventListener('input',e=>{
+  if(e.target.classList.contains('stname')){const t=dinnerTables.find(x=>x.id===Number(e.target.dataset.tid));if(t)t.name=e.target.value;}
+});
+document.getElementById('pane-seating').addEventListener('change',e=>{
+  if(e.target.classList.contains('stadd')){
+    const tid=Number(e.target.dataset.tid),gid=Number(e.target.value);
+    if(gid){const g=guests.find(x=>x.id===gid);if(g){g.dinnerTable=tid;saveGuest(g);}}
+    renderSeating();
+  } else if(e.target.classList.contains('stname')){
+    const t=dinnerTables.find(x=>x.id===Number(e.target.dataset.tid));if(t)saveDinnerTable(t);
+  }
+});
 
 
 /* ============ VENDORS ============ */
@@ -1127,7 +1314,10 @@ document.getElementById('pane-plan').addEventListener('change',e=>{
   else if(a==='time'||a==='act'){const idx=Number(tb.dataset.i),item=day.items[idx];if(item&&item.row_id!=null)saveTimelineItem(item,day.day_id??di,idx);}
 });
 
-renderGuests();renderRooms();renderVendors();renderPlan();renderNotes();initAuth();
+renderGuests();renderRooms();renderSeating();renderVendors();renderPlan();renderNotes();
+updateFxLabel();
+loadFxRate().then(()=>{ if(state.currency==='USD'){render();renderRooms();renderPlan();} });
+initAuth();
 
 </script>
 </body>

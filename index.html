@@ -170,8 +170,13 @@
   #authgate button{margin-top:16px;width:100%;font-family:var(--body);font-size:14px;font-weight:600;padding:12px;border:none;border-radius:9px;background:var(--olive);color:#fff;cursor:pointer}
   #authgate button:hover{background:#4a5a37}
   #autherr{color:var(--clay);font-size:12.5px;min-height:16px;margin-top:8px}
-  #signout{position:fixed;top:14px;right:14px;z-index:50;display:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+  .whead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px}
+  #signout{display:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
   #signout:hover{color:var(--ink);border-color:var(--brass)}
+  /* Prevent iOS Safari auto-zoom on input focus (anything < 16px triggers it) */
+  @media (hover:none) and (pointer:coarse){
+    input, select, textarea { font-size:16px }
+  }
   .ttext{font-size:14px;font-weight:600}
   .task.done .ttext{text-decoration:line-through}
   .tdue{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:2px}
@@ -216,11 +221,12 @@
     </form>
   </div>
 </div>
-<button id="signout" title="Sign out">sign out</button>
-
 <div class="wrap">
 
-  <div class="kicker">Amastuola · Puglia · our venue ♥</div>
+  <div class="whead">
+    <div class="kicker">Amastuola · Puglia · our venue ♥</div>
+    <button id="signout" title="Sign out">sign out</button>
+  </div>
   <h1>Our wedding at <em>Amastuola.</em></h1>
   <p class="sub">Budget, guests, rooms &amp; vendors — your wedding planning HQ. 2028 pricing. Edits save automatically.</p>
 

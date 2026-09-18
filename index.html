@@ -28,8 +28,9 @@
   .total .fig{font-family:var(--display);font-size:clamp(32px,8.5vw,48px);font-weight:600;letter-spacing:-.01em;line-height:1}
   .total .meta{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:7px;font-family:var(--mono);font-size:11px;color:#C9C2AE}
 
-  .glab{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:20px 0 10px;display:flex;align-items:center;gap:10px}
-  .glab::after{content:"";flex:1;height:1px;background:var(--line)}
+  .glab{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:22px 0 12px;display:flex;align-items:center;gap:10px}
+  .glab::before{content:"✦";color:var(--brass);font-size:10px;opacity:.85;letter-spacing:normal}
+  .glab::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
   .field{margin-bottom:15px}
   .flab{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   .flab .v{font-family:var(--mono);color:var(--brass);font-weight:700;white-space:nowrap}
@@ -84,17 +85,19 @@
   .vtot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-family:var(--display);font-size:16px;font-weight:600}
   .vtot .amt{font-family:var(--mono);color:var(--brass)}
 
-  .grand{background:linear-gradient(135deg,#4A5A38,#586B43);color:#F6F3E8;border-radius:18px;padding:24px;margin-top:18px;box-shadow:0 8px 28px rgba(58,70,41,.22)}
-  .grand .lab{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#D8E0C5}
-  .grand .fig{font-family:var(--display);font-size:clamp(38px,10vw,60px);font-weight:600;line-height:1;letter-spacing:-.01em;margin-top:4px}
-  .grand .split{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:12px;font-family:var(--mono);font-size:12px;color:#E4E9D6}
-  .grand .split b{color:#fff;font-weight:700}
+  .grand{background:linear-gradient(135deg,#2A2F26 0%,#363C31 100%);color:#F4EFE2;border-radius:18px;padding:24px 24px 22px;margin-top:20px;box-shadow:0 10px 32px rgba(38,43,35,.22);position:relative;overflow:hidden}
+  .grand::before{content:"";position:absolute;top:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,var(--brass) 30%,var(--brass) 70%,transparent);opacity:.6}
+  .grand .lab{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#C9C2AE}
+  .grand .fig{font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(38px,10vw,60px);line-height:1;letter-spacing:-.01em;margin-top:6px;color:#F6EFD6}
+  .grand .split{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:14px;font-family:var(--mono);font-size:11.5px;color:#C9C2AE}
+  .grand .split b{color:#F6EFD6;font-weight:700}
 
   footer{margin-top:22px;border-top:1px solid var(--line);padding-top:13px;font-size:11.5px;color:var(--ink-soft);font-family:var(--mono);line-height:1.6}
 
-  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 16px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:5px}
-  .tab{flex:1 1 auto;min-width:70px;text-align:center;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;padding:12px 8px;border-radius:9px;cursor:pointer;border:none;background:transparent;color:var(--ink-soft);transition:.15s}
-  .tab.active{background:var(--ink);color:#F4EFE2}
+  .tabs{display:flex;flex-wrap:wrap;gap:5px;margin:16px 0 18px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:5px}
+  .tab{flex:1 1 auto;min-width:64px;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;padding:11px 6px;border-radius:9px;cursor:pointer;border:none;background:transparent;color:var(--ink-soft);transition:all .18s ease}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:#fff;color:var(--brass);box-shadow:0 1px 4px rgba(38,43,35,.07),0 0 0 1px var(--brass-pale)}
   .tabpane{display:none}.tabpane.show{display:block}
   .psum{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 15px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);line-height:1.7;margin-bottom:14px}
   .psum b{color:var(--brass);font-weight:700}
@@ -103,7 +106,8 @@
   .btn,#addguest{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:10px 14px;border-radius:9px;border:1.5px solid var(--ink);background:var(--ink);color:#F4EFE2;cursor:pointer;white-space:nowrap}
   .btn.ghost{background:transparent;color:var(--ink)}
   .applybtn{width:100%;margin-bottom:14px;font-family:var(--mono);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:11px;border-radius:9px;border:1.5px solid var(--brass);background:var(--brass-pale);color:#6f5118;cursor:pointer}
-  .guest{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:8px}
+  .guest{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:8px;transition:border-color .15s ease}
+  .guest:hover,.room:hover,.vcard:hover,.task:hover,.payline:hover,.notecard:hover,.tday:hover,.travelcard:hover{border-color:#c9c2ac}
   .gtop{display:flex;align-items:center;gap:8px}
   .gnum{font-family:var(--mono);font-size:11px;color:var(--ink-soft);min-width:22px}
   .gname{flex:1;font-family:var(--body);font-size:15px;font-weight:600;border:none;background:transparent;color:var(--ink);padding:3px 5px;border-radius:6px;min-width:0}
@@ -184,14 +188,16 @@
   #autherr{color:var(--clay);font-size:12.5px;min-height:16px;margin-top:8px}
   .whead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px}
   .whead-right{display:flex;gap:6px;align-items:center}
-  #signout{display:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
-  #signout:hover{color:var(--ink);border-color:var(--brass)}
-  #fxtoggle{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;letter-spacing:.05em}
-  #fxtoggle:hover{color:var(--ink);border-color:var(--brass)}
+  #signout{display:none;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;transition:all .15s ease}
+  #signout:hover{color:var(--brass);border-color:var(--brass);background:var(--surface)}
+  #fxtoggle{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink-soft);background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;letter-spacing:.05em;transition:all .15s ease}
+  #fxtoggle:hover{color:var(--ink);border-color:var(--brass);background:var(--surface)}
   #fxtoggle .active-cur{color:var(--brass)}
-  /* ─── Countdown ─── */
-  .cdn{font-family:var(--display);font-style:italic;font-size:15px;color:var(--ink-soft);margin:0 0 14px;line-height:1.35}
-  .cdn b{font-family:var(--mono);font-style:normal;font-size:19px;font-weight:700;color:var(--brass);letter-spacing:-.01em;margin-right:3px}
+  /* ─── Countdown hero ─── */
+  .cdn{background:linear-gradient(135deg,#FBFAF5 0%,#F4EFE2 100%);border:1px solid var(--brass-pale);border-radius:18px;padding:24px 20px 22px;text-align:center;margin:2px 0 22px;box-shadow:0 2px 12px rgba(164,118,47,.06)}
+  .cdn .cd-num{font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(52px,13vw,80px);color:var(--brass);line-height:.95;letter-spacing:-.025em}
+  .cdn .cd-label{font-family:var(--display);font-style:italic;font-size:15.5px;color:var(--ink);margin-top:8px;line-height:1.35}
+  .cdn .cd-date{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);letter-spacing:.18em;text-transform:uppercase;margin-top:14px;padding:10px 18px 0;border-top:1px solid var(--brass-pale);display:inline-block}
   /* ─── Travel tab ─── */
   #pane-travel h3{font-family:var(--display);font-weight:600;font-size:18px;margin:20px 0 8px;color:var(--ink)}
   #pane-travel ul{margin:0 0 10px 20px}
@@ -252,14 +258,14 @@
 <div class="wrap">
 
   <div class="whead">
-    <div class="kicker">Amastuola · Puglia · our venue ♥</div>
+    <div class="kicker">Amastuola · Puglia · June 2028</div>
     <div class="whead-right">
       <button id="fxtoggle" title="Toggle EUR/USD"><span class="active-cur">€</span> / $</button>
       <button id="signout" title="Sign out">sign out</button>
     </div>
   </div>
   <h1>Our wedding at <em>Amastuola.</em></h1>
-  <p class="sub">Budget, guests, rooms &amp; vendors — your wedding planning HQ. 2028 pricing. Edits save automatically.</p>
+  <p class="sub">Every piece of the celebration in one place — edits sync across our devices.</p>
   <div id="countdown" class="cdn"></div>
 
   <div class="tabs">
@@ -765,10 +771,13 @@ function renderCountdown(){
   const d=new Date(state.checkin+'T16:00:00');
   const now=new Date();
   const days=Math.ceil((d-now)/86400000);
-  if(days>1)el.innerHTML='<b>'+days+'</b> days until we say sì in Puglia';
-  else if(days===1)el.innerHTML='<b>1</b> day to go ♥';
-  else if(days===0)el.innerHTML='<b>Today ♥</b>';
-  else el.innerHTML='<b>'+Math.abs(days)+'</b> day'+(Math.abs(days)===1?'':'s')+' since Amastuola ♥';
+  const dateStr=d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  let num,label;
+  if(days>1){num=days;label='days until we say sì at Amastuola';}
+  else if(days===1){num=1;label='day to go — see you tomorrow ♥';}
+  else if(days===0){num='♥';label='Today. Right now, this is happening.';}
+  else{num=Math.abs(days);label='day'+(Math.abs(days)===1?'':'s')+' since we said sì ♥';}
+  el.innerHTML='<div class="cd-num">'+num+'</div><div class="cd-label">'+label+'</div><div class="cd-date">'+dateStr+'</div>';
 }
 function downloadGuestCSV(){
   const rows=[['id','name','status','family','bridal','room','email','note']];

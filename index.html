@@ -536,7 +536,7 @@ let A_STAYING=48,A_EXTRA_BEDS=12; // staying guests & extra beds in use, synced 
 let planHook=null; // lets the Plan tab refresh when the budget/date changes
 const VENDORS=[{id:'planner',label:'Wedding planner',max:15000,def:7500},{id:'photo',label:'Photo + video',max:12000,def:6000},{id:'florals',label:'Florals & décor',max:12000,def:5000},{id:'music',label:'Music · DJ or band',max:8000,def:3500},{id:'hmu',label:'Hair & makeup',max:4000,def:1500},{id:'transport',label:'Guest transport',max:6000,def:2000},{id:'other',label:'Attire, rings & buffer',max:15000,def:1000}];
 
-let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0};
+let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0,vendorBudgets:Object.fromEntries(VENDORS.map(v=>[v.id,v.def]))};
 const PRESETS={rec:{menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0},
   cheap:{menu:'calaprice',abar:'none',ext:'0',welcome:'none',brunch:'off',ceremony:'symbolic',olive:'off',contrib:'150',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0},
   splurge:{menu:'centosassi',abar:'ck4',ext:'2',welcome:'winedinner',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'on',dessert:'on',icecream:'on',rum:'on',prosecco:'on',fireworks:'on',kids:0}};
@@ -638,7 +638,8 @@ document.getElementById('checkin').addEventListener('change',e=>{state.checkin=e
 document.getElementById('guests').addEventListener('input',e=>{state.guests=Number(e.target.value);render();saveSettings();});
 document.getElementById('kids').addEventListener('input',e=>{state.kids=Number(e.target.value);render();saveSettings();});
 document.getElementById('abar').addEventListener('change',e=>{state.abar=e.target.value;render();saveSettings();});
-VENDORS.forEach(v=>document.getElementById('v-'+v.id).addEventListener('input',render));
+VENDORS.forEach(v=>document.getElementById('v-'+v.id).addEventListener('input',e=>{state.vendorBudgets=state.vendorBudgets||{};state.vendorBudgets[v.id]=Number(e.target.value);render();saveSettings();}));
+function syncSlidersFromState(){if(!state.vendorBudgets)return;VENDORS.forEach(v=>{const el=document.getElementById('v-'+v.id),val=state.vendorBudgets[v.id];if(el&&val!=null)el.value=val;});}
 document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{Object.assign(state,PRESETS[b.dataset.preset]);render();saveSettings();}));
 
 render();
@@ -784,6 +785,7 @@ async function hydrate(){
   } catch (e) {
     console.warn('[db] hydrate error — keeping in-memory defaults', e);
   }
+  syncSlidersFromState();
   render();
   renderGuests();
   renderRooms();

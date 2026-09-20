@@ -163,6 +163,47 @@
   .task.done .tcheck{background:var(--olive);border-color:var(--olive)}
   .tbody{flex:1;min-width:0}
 
+  /* ─── Seating: long tables ─── */
+  .unseated-pool{background:var(--brass-pale);border:1px dashed var(--brass);border-radius:12px;padding:12px 14px;margin-bottom:16px;transition:background .15s ease}
+  .unseated-pool.drop-target{background:#f8ecd0;border-style:solid}
+  .unseated-pool .up-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#6f5118;margin-bottom:10px;line-height:1.4}
+  .unseated-pool .up-empty{font-family:var(--display);font-style:italic;font-size:14px;color:#6f5118;padding:4px 0}
+  .up-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .up-chip{display:inline-block;padding:6px 10px;background:#fff;border:1px solid #e2cfa3;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;user-select:none;transition:all .15s ease}
+  .up-chip:hover{border-color:var(--brass);background:var(--surface)}
+  .up-chip.selected{background:var(--brass);color:#fff;border-color:var(--brass);box-shadow:0 2px 6px rgba(164,118,47,.3)}
+  .up-chip.maybe{opacity:.6}
+  .up-chip.dragging{opacity:.4}
+
+  .longtable{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 14px 18px;margin-bottom:14px}
+  .longtable-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .longtable-head .lt-name{flex:1;min-width:120px;font-family:var(--display);font-style:italic;font-size:20px;font-weight:600;border:none;background:transparent;color:var(--ink);padding:2px 4px;border-radius:6px}
+  .longtable-head .lt-name:focus{outline:1px solid var(--brass);background:#fff;font-style:normal}
+  .longtable-head .lt-controls{display:flex;gap:6px;align-items:center}
+  .longtable-head .lt-meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);letter-spacing:.06em}
+  .longtable-head .lt-meta b{color:var(--brass);font-weight:700}
+  .longtable-head .lt-seats-in{width:56px;font-family:var(--mono);font-size:12px;font-weight:700;padding:5px 6px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);text-align:center;-moz-appearance:textfield}
+  .longtable-head .lt-seats-in::-webkit-outer-spin-button,.longtable-head .lt-seats-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .longtable-head .lt-remove{border:none;background:transparent;color:var(--ink-soft);font-size:19px;line-height:1;cursor:pointer;padding:2px 6px}
+  .longtable-head .lt-remove:hover{color:var(--clay)}
+
+  .seatgrid{display:grid;grid-template-columns:1fr 44px 1fr;gap:6px 8px;align-items:stretch}
+  .plank{grid-column:2;grid-row:1 / -1;background:linear-gradient(180deg,#c8974b 0%,#d9a55d 40%,#c8974b 100%);border-radius:6px;box-shadow:inset 0 1px 3px rgba(0,0,0,.25),inset 0 -1px 2px rgba(0,0,0,.12);margin:6px 0;min-height:20px;pointer-events:none}
+  .seat{background:#fff;border:1px dashed var(--line);border-radius:8px;padding:9px 8px;min-height:42px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);cursor:pointer;text-align:center;transition:all .12s ease;line-height:1.2;user-select:none}
+  .seat.left{grid-column:1}
+  .seat.right{grid-column:3}
+  .seat:hover:not(.filled){border-color:var(--brass);background:#fdfaf0}
+  .seat.filled{background:var(--olive-pale);border:1px solid #cdd6b6;color:var(--ink);font-family:var(--body);font-size:12.5px;font-weight:600}
+  .seat.filled:hover{border-color:var(--brass);background:#f0efd8}
+  .seat.selected-src{background:var(--brass);border:1px solid var(--brass);color:#fff;box-shadow:0 2px 6px rgba(164,118,47,.3)}
+  .seat.drop-target{background:#fff9e6;border-color:var(--brass);border-style:solid}
+  .seat.dragging{opacity:.4}
+  .seat-empty-cell{background:transparent;border:none;min-height:1px}
+
+  .table-orphans{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;background:#fdf5e0;border:1px dashed #e2cfa3;border-radius:9px;margin-bottom:10px}
+  .table-orphans-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6f5118;width:100%;margin-bottom:2px}
+  .table-orphans .up-chip{font-size:11.5px;padding:4px 8px}
+
   /* ─── Notes tab ─── */
   .ncompose{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
   .ncompose textarea{width:100%;font-family:var(--body);font-size:14px;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);resize:vertical;min-height:70px;line-height:1.5}
@@ -470,9 +511,9 @@
   <div class="tabpane" id="pane-seating">
     <div class="glab" style="margin-top:8px">Reception seating</div>
     <div class="psum" id="ssum"></div>
-    <div class="note" style="margin-top:0;margin-bottom:12px">Who sits with whom at the wedding dinner. Separate from room assignments — a guest can be at a room and at a table both.</div>
-    <div class="addrow"><button class="btn" id="addtable">+ Add table</button><button class="btn ghost" id="autoseat">Auto-seat unseated</button></div>
-    <div id="unseated" class="unassigned"></div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Long tables. <b>Tap a name in the pool, then tap a seat</b> — or drag on desktop. Tap a seated guest to pick them up, then drop them elsewhere (or on the pool to unseat).</div>
+    <div class="addrow"><button class="btn" id="addtable">+ Add table</button><button class="btn ghost" id="autoseat">Auto-seat all</button></div>
+    <div id="unseated"></div>
     <div id="tablelist"></div>
   </div>
 
@@ -537,7 +578,8 @@ function saveGuest(g) {
   db.from('guests').upsert({
     id: g.id, name: g.name, status: g.status,
     family: !!g.family, bridal: !!g.bridal,
-    room_id: g.room ?? null, dinner_table: g.dinnerTable ?? null,
+    room_id: g.room ?? null,
+    dinner_table: g.dinnerTable ?? null, dinner_seat: g.dinnerSeat ?? null,
     email: g.email ?? null, note: g.note ?? null,
     position: guests.indexOf(g)
   }).then(_dbErr('saveGuest'));
@@ -925,7 +967,8 @@ async function hydrate(){
       guests = gr.data.map(g => ({
         id:g.id, name:g.name, status:g.status,
         family:!!g.family, bridal:!!g.bridal,
-        room:g.room_id, dinnerTable:g.dinner_table,
+        room:g.room_id,
+        dinnerTable:g.dinner_table, dinnerSeat:g.dinner_seat,
         email:g.email, note:g.note
       }));
     }
@@ -1105,57 +1148,251 @@ document.getElementById('copyexport').addEventListener('click',()=>{const t=docu
 
 
 /* ============ SEATING ============ */
+let _selectedGuestId = null;
+
 function renderSeating(){
   const totalSeats=dinnerTables.reduce((s,t)=>s+t.seats,0);
   const seated=guests.filter(g=>g.dinnerTable!=null).length;
   const off=guests.filter(g=>g.status==='likely'&&g.dinnerTable==null).length;
   document.getElementById('ssum').innerHTML=dinnerTables.length+' tables &middot; '+totalSeats+' seats &middot; <b>'+seated+'</b> seated &middot; '+Math.max(0,totalSeats-seated)+' open &middot; '+off+' likely still unseated';
-  const un=guests.filter(g=>g.dinnerTable==null&&(g.status==='likely'||g.status==='maybe'));
-  document.getElementById('tablelist').innerHTML=dinnerTables.map(t=>{
-    const occ=guests.filter(g=>g.dinnerTable===t.id),over=occ.length>t.seats;
-    const chips=occ.map(g=>'<span class="occ">'+esc(g.name)+'<button data-sact="unseat" data-id="'+g.id+'">×</button></span>').join('')||'<span class="empty">empty</span>';
-    const opts=un.map(g=>'<option value="'+g.id+'">'+esc(g.name)+'</option>').join('');
-    return '<div class="room'+(over?' over':'')+'"><div class="rtop"><input class="stname" data-tid="'+t.id+'" value="'+esc(t.name)+'"><div class="cap"><button data-sact="cap-dec" data-tid="'+t.id+'">−</button><span>'+t.seats+'</span><button data-sact="cap-inc" data-tid="'+t.id+'">+</button></div><button class="rx" data-sact="table-remove" data-tid="'+t.id+'">×</button></div><div class="roccupants">'+chips+'</div><select class="stadd" data-tid="'+t.id+'"><option value="">+ add guest…</option>'+opts+'</select><div class="rfoot">'+occ.length+' / '+t.seats+(over?' <span class="warn">over capacity</span>':'')+'</div></div>';
-  }).join('');
+
+  // Unseated pool
   const unL=guests.filter(g=>g.dinnerTable==null&&g.status==='likely');
   const unM=guests.filter(g=>g.dinnerTable==null&&g.status==='maybe');
-  let uh;
-  if(!unL.length&&!unM.length)uh='<h4>Everyone attending has a seat ✓</h4>';
-  else uh='<h4>Not yet seated — '+unL.length+' likely, '+unM.length+' maybe</h4>'+unL.map(g=>'<span class="uchip">'+esc(g.name)+'</span>').join('')+unM.map(g=>'<span class="uchip maybe">'+esc(g.name)+'</span>').join('');
-  document.getElementById('unseated').innerHTML=uh;
+  let poolHtml='<div class="unseated-pool" id="unseated-pool"><div class="up-label">Unseated &middot; '+unL.length+' likely'+(unM.length?', '+unM.length+' maybe':'')+'</div>';
+  if(!unL.length&&!unM.length){
+    poolHtml+='<div class="up-empty">Everyone attending has a seat ✓</div>';
+  } else {
+    poolHtml+='<div class="up-chips">';
+    unL.forEach(g=>{poolHtml+=chipHtml(g,false);});
+    unM.forEach(g=>{poolHtml+=chipHtml(g,true);});
+    poolHtml+='</div>';
+  }
+  poolHtml+='</div>';
+  document.getElementById('unseated').innerHTML=poolHtml;
+
+  // Tables
+  document.getElementById('tablelist').innerHTML=dinnerTables.map(t=>{
+    const occ=guests.filter(g=>g.dinnerTable===t.id);
+    // occupants without a seat position (from before seat-level assignments existed)
+    const orphans=occ.filter(g=>g.dinnerSeat==null);
+    // seat position map
+    const seatMap={};
+    occ.forEach(g=>{if(g.dinnerSeat!=null)seatMap[g.dinnerSeat]=g;});
+
+    let orphansHtml='';
+    if(orphans.length){
+      orphansHtml='<div class="table-orphans"><div class="table-orphans-label">At this table, not yet placed</div>';
+      orphans.forEach(g=>{orphansHtml+=chipHtml(g,false);});
+      orphansHtml+='</div>';
+    }
+
+    const pairs=Math.ceil(t.seats/2);
+    let seatsHtml='<div class="plank"></div>';
+    for(let row=0;row<pairs;row++){
+      const li=row*2, ri=row*2+1;
+      seatsHtml+=seatCellHtml(t.id, li, 'left', seatMap[li]);
+      if(ri<t.seats){
+        seatsHtml+=seatCellHtml(t.id, ri, 'right', seatMap[ri]);
+      } else {
+        seatsHtml+='<div class="seat-empty-cell"></div>';
+      }
+    }
+
+    return '<div class="longtable">'+
+      '<div class="longtable-head">'+
+        '<input class="lt-name" data-tid="'+t.id+'" value="'+esc(t.name)+'">'+
+        '<div class="lt-controls">'+
+          '<span class="lt-meta"><b>'+occ.length+'</b> / <input type="number" class="lt-seats-in" data-tid="'+t.id+'" value="'+t.seats+'" min="1" max="80"> seats</span>'+
+          '<button class="lt-remove" data-sact="table-remove" data-tid="'+t.id+'" title="Delete table">×</button>'+
+        '</div>'+
+      '</div>'+
+      orphansHtml+
+      '<div class="seatgrid">'+seatsHtml+'</div>'+
+    '</div>';
+  }).join('');
 }
+
+function chipHtml(g, isMaybe){
+  const cls='up-chip'+(isMaybe?' maybe':'')+(_selectedGuestId===g.id?' selected':'');
+  return '<span class="'+cls+'" data-gid="'+g.id+'" draggable="true">'+esc(g.name)+'</span>';
+}
+function seatCellHtml(tid, si, side, g){
+  const cls='seat '+side+(g?' filled':'')+(g&&_selectedGuestId===g.id?' selected-src':'');
+  const label=g?esc(g.name):(si+1);
+  const drag=g?' draggable="true"':'';
+  return '<div class="'+cls+'" data-tid="'+tid+'" data-seat="'+si+'"'+drag+'>'+label+'</div>';
+}
+
+/* Core operation: assign or swap a guest into a seat.
+   If seat is empty: place src there.
+   If seat is filled: swap src and occupant (occupant takes src's old spot,
+   or goes to pool if src had none). */
+function placeGuestInSeat(srcId, tid, si){
+  const src=guests.find(g=>g.id===srcId);if(!src)return;
+  const occupant=guests.find(g=>g.dinnerTable===tid&&g.dinnerSeat===si);
+  if(occupant&&occupant.id===src.id)return; // already there
+  const srcTable=src.dinnerTable, srcSeat=src.dinnerSeat;
+  if(occupant){
+    occupant.dinnerTable=srcTable;
+    occupant.dinnerSeat=srcSeat;
+    saveGuest(occupant);
+  }
+  src.dinnerTable=tid;
+  src.dinnerSeat=si;
+  saveGuest(src);
+}
+function unseatGuest(srcId){
+  const g=guests.find(x=>x.id===srcId);if(!g)return;
+  g.dinnerTable=null;g.dinnerSeat=null;
+  saveGuest(g);
+}
+
+/* Add table (default 40 seats) */
 document.getElementById('addtable').addEventListener('click',()=>{
   const id=dinnerTables.reduce((m,t)=>Math.max(m,t.id),0)+1;
-  const nt={id,name:'Table '+(dinnerTables.length+1),seats:8};
+  const nt={id,name:'Long table '+(dinnerTables.length+1),seats:40};
   dinnerTables.push(nt);saveDinnerTable(nt);renderSeating();
 });
+/* Auto-seat: fill open seats sequentially with likely-unseated guests */
 document.getElementById('autoseat').addEventListener('click',()=>{
-  const open=[];dinnerTables.forEach(t=>{const o=guests.filter(g=>g.dinnerTable===t.id).length;for(let i=o;i<t.seats;i++)open.push(t.id);});
-  const pool=guests.filter(g=>g.dinnerTable==null&&g.status==='likely').sort((a,b)=>((b.family?1:0)+(b.bridal?1:0))-((a.family?1:0)+(a.bridal?1:0)));
-  pool.forEach(g=>{const tid=open.shift();if(tid!=null){g.dinnerTable=tid;saveGuest(g);}});
+  const openings=[];
+  dinnerTables.forEach(t=>{
+    for(let i=0;i<t.seats;i++){
+      const taken=guests.some(g=>g.dinnerTable===t.id&&g.dinnerSeat===i);
+      if(!taken)openings.push({tid:t.id,si:i});
+    }
+  });
+  const pool=guests.filter(g=>g.dinnerTable==null&&g.status==='likely')
+    .sort((a,b)=>((b.family?1:0)+(b.bridal?1:0))-((a.family?1:0)+(a.bridal?1:0)));
+  pool.forEach(g=>{
+    const spot=openings.shift();
+    if(spot){g.dinnerTable=spot.tid;g.dinnerSeat=spot.si;saveGuest(g);}
+  });
   renderSeating();
 });
+
+/* Click delegation — handles tap-to-place, table remove, and orphan chips */
 document.getElementById('pane-seating').addEventListener('click',e=>{
-  const b=e.target.closest('[data-sact]');if(!b)return;
-  const a=b.dataset.sact;
-  if(a==='cap-dec'){const t=dinnerTables.find(x=>x.id===Number(b.dataset.tid));if(t){t.seats=Math.max(1,t.seats-1);saveDinnerTable(t);}}
-  else if(a==='cap-inc'){const t=dinnerTables.find(x=>x.id===Number(b.dataset.tid));if(t){t.seats++;saveDinnerTable(t);}}
-  else if(a==='table-remove'){const tid=Number(b.dataset.tid);guests.forEach(g=>{if(g.dinnerTable===tid){g.dinnerTable=null;saveGuest(g);}});dinnerTables=dinnerTables.filter(x=>x.id!==tid);deleteDinnerTable(tid);}
-  else if(a==='unseat'){const g=guests.find(x=>x.id===Number(b.dataset.id));if(g){g.dinnerTable=null;saveGuest(g);}}
-  else return;
-  renderSeating();
+  // Table remove button
+  const rm=e.target.closest('[data-sact="table-remove"]');
+  if(rm){
+    const tid=Number(rm.dataset.tid);
+    guests.forEach(g=>{if(g.dinnerTable===tid){g.dinnerTable=null;g.dinnerSeat=null;saveGuest(g);}});
+    dinnerTables=dinnerTables.filter(x=>x.id!==tid);
+    deleteDinnerTable(tid);
+    _selectedGuestId=null;renderSeating();return;
+  }
+  // Pool chip: select/deselect
+  const chip=e.target.closest('.up-chip');
+  if(chip){
+    const gid=Number(chip.dataset.gid);
+    // If clicked while another guest was selected, treat as "swap targets" — unseat this one
+    // Simpler: just toggle selection.
+    _selectedGuestId=_selectedGuestId===gid?null:gid;
+    renderSeating();return;
+  }
+  // Pool background (not a chip): if a guest is selected, unseat them here
+  const pool=e.target.closest('.unseated-pool');
+  if(pool&&_selectedGuestId!=null){
+    unseatGuest(_selectedGuestId);
+    _selectedGuestId=null;renderSeating();return;
+  }
+  // Seat click
+  const seat=e.target.closest('.seat[data-seat]');
+  if(seat){
+    const tid=Number(seat.dataset.tid);
+    const si=Number(seat.dataset.seat);
+    const occupant=guests.find(g=>g.dinnerTable===tid&&g.dinnerSeat===si);
+    if(_selectedGuestId!=null){
+      placeGuestInSeat(_selectedGuestId,tid,si);
+      _selectedGuestId=null;renderSeating();
+    } else if(occupant){
+      _selectedGuestId=occupant.id;renderSeating();
+    }
+    return;
+  }
 });
+
+/* Table name + seat count edits */
 document.getElementById('pane-seating').addEventListener('input',e=>{
-  if(e.target.classList.contains('stname')){const t=dinnerTables.find(x=>x.id===Number(e.target.dataset.tid));if(t)t.name=e.target.value;}
+  if(e.target.classList.contains('lt-name')){
+    const t=dinnerTables.find(x=>x.id===Number(e.target.dataset.tid));
+    if(t)t.name=e.target.value;
+  }
 });
 document.getElementById('pane-seating').addEventListener('change',e=>{
-  if(e.target.classList.contains('stadd')){
-    const tid=Number(e.target.dataset.tid),gid=Number(e.target.value);
-    if(gid){const g=guests.find(x=>x.id===gid);if(g){g.dinnerTable=tid;saveGuest(g);}}
-    renderSeating();
-  } else if(e.target.classList.contains('stname')){
-    const t=dinnerTables.find(x=>x.id===Number(e.target.dataset.tid));if(t)saveDinnerTable(t);
+  if(e.target.classList.contains('lt-name')){
+    const t=dinnerTables.find(x=>x.id===Number(e.target.dataset.tid));
+    if(t)saveDinnerTable(t);
+  } else if(e.target.classList.contains('lt-seats-in')){
+    const t=dinnerTables.find(x=>x.id===Number(e.target.dataset.tid));
+    if(t){
+      const n=Math.max(1,Math.min(80,Number(e.target.value)||1));
+      t.seats=n;e.target.value=n;
+      // if seats got smaller, unseat any guests beyond the new capacity
+      guests.forEach(g=>{if(g.dinnerTable===t.id&&g.dinnerSeat!=null&&g.dinnerSeat>=n){g.dinnerSeat=null;saveGuest(g);}});
+      saveDinnerTable(t);renderSeating();
+    }
   }
+});
+
+/* HTML5 drag-and-drop (desktop enhancement — mobile Safari won't fire these) */
+let _dragGuestId=null;
+document.getElementById('pane-seating').addEventListener('dragstart',e=>{
+  const chip=e.target.closest('.up-chip');
+  const seat=e.target.closest('.seat.filled');
+  let gid=null;
+  if(chip)gid=Number(chip.dataset.gid);
+  else if(seat){
+    const tid=Number(seat.dataset.tid),si=Number(seat.dataset.seat);
+    const g=guests.find(x=>x.dinnerTable===tid&&x.dinnerSeat===si);
+    if(g)gid=g.id;
+  }
+  if(gid!=null){
+    _dragGuestId=gid;
+    try{e.dataTransfer.setData('text/plain',String(gid));e.dataTransfer.effectAllowed='move';}catch(_){}
+    setTimeout(()=>{
+      if(chip)chip.classList.add('dragging');
+      if(seat)seat.classList.add('dragging');
+    },0);
+  }
+});
+document.getElementById('pane-seating').addEventListener('dragend',()=>{
+  _dragGuestId=null;
+  document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
+  document.querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
+});
+document.getElementById('pane-seating').addEventListener('dragover',e=>{
+  const seat=e.target.closest('.seat[data-seat]');
+  const pool=e.target.closest('.unseated-pool');
+  if(seat||pool){e.preventDefault();try{e.dataTransfer.dropEffect='move';}catch(_){}}
+});
+document.getElementById('pane-seating').addEventListener('dragenter',e=>{
+  const seat=e.target.closest('.seat[data-seat]');
+  const pool=e.target.closest('.unseated-pool');
+  if(seat)seat.classList.add('drop-target');
+  if(pool)pool.classList.add('drop-target');
+});
+document.getElementById('pane-seating').addEventListener('dragleave',e=>{
+  const seat=e.target.closest('.seat[data-seat]');
+  const pool=e.target.closest('.unseated-pool');
+  if(seat)seat.classList.remove('drop-target');
+  if(pool)pool.classList.remove('drop-target');
+});
+document.getElementById('pane-seating').addEventListener('drop',e=>{
+  e.preventDefault();
+  const gid=_dragGuestId!=null?_dragGuestId:Number(e.dataTransfer.getData('text/plain'));
+  if(!gid)return;
+  const seat=e.target.closest('.seat[data-seat]');
+  const pool=e.target.closest('.unseated-pool');
+  if(seat){
+    placeGuestInSeat(gid,Number(seat.dataset.tid),Number(seat.dataset.seat));
+  } else if(pool){
+    unseatGuest(gid);
+  }
+  _dragGuestId=null;_selectedGuestId=null;
+  renderSeating();
 });
 
 

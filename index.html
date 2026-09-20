@@ -246,11 +246,11 @@
   #fxtoggle{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink-soft);background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;letter-spacing:.05em;transition:all .15s ease}
   #fxtoggle:hover{color:var(--ink);border-color:var(--brass);background:var(--surface)}
   #fxtoggle .active-cur{color:var(--brass)}
-  /* ─── Countdown hero ─── */
-  .cdn{background:linear-gradient(135deg,#FBFAF5 0%,#F4EFE2 100%);border:1px solid var(--brass-pale);border-radius:18px;padding:24px 20px 22px;text-align:center;margin:2px 0 22px;box-shadow:0 2px 12px rgba(164,118,47,.06)}
-  .cdn .cd-num{font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(52px,13vw,80px);color:var(--brass);line-height:.95;letter-spacing:-.025em}
-  .cdn .cd-label{font-family:var(--display);font-style:italic;font-size:15.5px;color:var(--ink);margin-top:8px;line-height:1.35}
-  .cdn .cd-date{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);letter-spacing:.18em;text-transform:uppercase;margin-top:14px;padding:10px 18px 0;border-top:1px solid var(--brass-pale);display:inline-block}
+  /* ─── Countdown (compact) ─── */
+  .cdn{display:flex;align-items:baseline;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:8px 12px;font-family:var(--display);font-style:italic;font-size:13.5px;color:var(--ink-soft);line-height:1.35}
+  .cdn .cd-num{font-family:var(--display);font-style:italic;font-weight:600;font-size:17px;color:var(--brass);letter-spacing:-.01em}
+  .cdn .cd-label{font-family:var(--display);font-style:italic;font-size:13.5px;color:var(--ink-soft)}
+  .cdn .cd-date{font-family:var(--mono);font-size:10px;color:var(--ink-soft);letter-spacing:.14em;text-transform:uppercase;opacity:.75}
   /* ─── Travel tab ─── */
   #pane-travel h3{font-family:var(--display);font-weight:600;font-size:18px;margin:20px 0 8px;color:var(--ink)}
   #pane-travel ul{margin:0 0 10px 20px}
@@ -318,7 +318,6 @@
     </div>
   </div>
   <h1>Our wedding at <em>Amastuola.</em></h1>
-  <p class="sub">Every piece of the celebration in one place — edits sync across our devices.</p>
   <div id="countdown" class="cdn"></div>
 
   <div class="tabs">
@@ -334,7 +333,6 @@
   </div>
 
   <div class="tabpane show" id="pane-home">
-    <div class="home-greet">Everything in one place. Tap a card to jump in.</div>
     <div id="homegrid" class="homegrid"></div>
   </div>
 
@@ -895,11 +893,11 @@ function renderCountdown(){
   const days=Math.ceil((d-now)/86400000);
   const dateStr=d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   let num,label;
-  if(days>1){num=days;label='days until we say sì at Amastuola';}
+  if(days>1){num=days;label='days until we say I do at Amastuola';}
   else if(days===1){num=1;label='day to go — see you tomorrow ♥';}
   else if(days===0){num='♥';label='Today. Right now, this is happening.';}
-  else{num=Math.abs(days);label='day'+(Math.abs(days)===1?'':'s')+' since we said sì ♥';}
-  el.innerHTML='<div class="cd-num">'+num+'</div><div class="cd-label">'+label+'</div><div class="cd-date">'+dateStr+'</div>';
+  else{num=Math.abs(days);label='day'+(Math.abs(days)===1?'':'s')+' since we said I do ♥';}
+  el.innerHTML='<span class="cd-num">'+num+'</span><span class="cd-label">'+label+'</span><span class="cd-date">· '+dateStr+'</span>';
 }
 function downloadGuestCSV(){
   const rows=[['id','name','status','family','bridal','room','email','note']];

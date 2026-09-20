@@ -701,12 +701,26 @@ async function loadFxRate() {
       const p = JSON.parse(cached);
       if (Date.now() - p.t < 86400000) { _fxRate = p.rate; return; }
     }
-    const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=USD');
-    const j = await r.json();
-    if (j && j.rates && j.rates.USD) {
-      _fxRate = j.rates.USD;
-      localStorage.setItem('pp_fx_eur_usd', JSON.stringify({t: Date.now(), rate: _fxRate}));
+    // jsDelivr-hosted currency API (permissive CORS, no key, updated daily).
+    // Falls back to the mirror if the primary URL fails.
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json',
+      'https://latest.currency-api.pages.dev/v1/currencies/eur.json'
+    ];
+    for (const url of urls) {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) continue;
+        const j = await r.json();
+        const rate = j && j.eur && j.eur.usd;
+        if (rate) {
+          _fxRate = rate;
+          localStorage.setItem('pp_fx_eur_usd', JSON.stringify({t: Date.now(), rate: _fxRate}));
+          return;
+        }
+      } catch (_) { /* try next */ }
     }
+    console.warn('[fx] all rate sources failed');
   } catch (e) { console.warn('[fx] fetch failed', e); }
 }
 function updateFxLabel() {

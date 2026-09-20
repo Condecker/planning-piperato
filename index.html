@@ -163,6 +163,18 @@
   .task.done .tcheck{background:var(--olive);border-color:var(--olive)}
   .tbody{flex:1;min-width:0}
 
+  /* ─── Home dashboard ─── */
+  .homegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:6px;margin-bottom:8px}
+  .homecard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;cursor:pointer;display:flex;flex-direction:column;gap:5px;transition:all .18s ease;position:relative;overflow:hidden}
+  .homecard:hover{border-color:var(--brass);transform:translateY(-2px);box-shadow:0 6px 18px rgba(38,43,35,.08)}
+  .homecard:hover .hc-arrow{color:var(--brass);transform:translateX(2px)}
+  .homecard .hc-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  .homecard .hc-primary{font-family:var(--display);font-size:26px;font-weight:600;color:var(--ink);line-height:1.1;margin-top:1px;letter-spacing:-.01em}
+  .homecard .hc-primary em{font-style:italic;font-weight:400;color:var(--brass)}
+  .homecard .hc-meta{font-family:var(--mono);font-size:11px;color:var(--ink-soft);line-height:1.55;margin-top:2px;min-height:16px}
+  .homecard .hc-arrow{font-family:var(--mono);font-size:10px;color:var(--ink-soft);letter-spacing:.14em;text-transform:uppercase;margin-top:8px;padding-top:8px;border-top:1px dotted var(--line);transition:all .15s ease}
+  .home-greet{font-family:var(--display);font-style:italic;font-size:15px;color:var(--ink-soft);text-align:center;margin:4px 0 14px;line-height:1.5}
+
   /* ─── Seating: long tables ─── */
   .unseated-pool{background:var(--brass-pale);border:1px dashed var(--brass);border-radius:12px;padding:12px 14px;margin-bottom:16px;transition:background .15s ease}
   .unseated-pool.drop-target{background:#f8ecd0;border-style:solid}
@@ -310,7 +322,8 @@
   <div id="countdown" class="cdn"></div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="budget">Budget</button>
+    <button class="tab active" data-tab="home">Home</button>
+    <button class="tab" data-tab="budget">Budget</button>
     <button class="tab" data-tab="guests">Guests</button>
     <button class="tab" data-tab="rooms">Rooms</button>
     <button class="tab" data-tab="seating">Seating</button>
@@ -320,7 +333,12 @@
     <button class="tab" data-tab="notes">Notes</button>
   </div>
 
-  <div class="tabpane show" id="pane-budget">
+  <div class="tabpane show" id="pane-home">
+    <div class="home-greet">Everything in one place. Tap a card to jump in.</div>
+    <div id="homegrid" class="homegrid"></div>
+  </div>
+
+  <div class="tabpane" id="pane-budget">
 
   <div class="total">
     <div class="lab">Venue-side cost</div>
@@ -808,6 +826,68 @@ function render(){
   if(planHook)planHook();
   renderCountdown();
 }
+function renderHome(){
+  const el=document.getElementById('homegrid');if(!el)return;
+  const r=compute();
+  const gLikely=guests.filter(g=>g.status==='likely').length;
+  const gMaybe=guests.filter(g=>g.status==='maybe').length;
+  const gNo=guests.filter(g=>g.status==='no').length;
+  const gRoom=guests.filter(g=>g.room!=null).length;
+  const gSeat=guests.filter(g=>g.dinnerTable!=null&&g.dinnerSeat!=null).length;
+  const totalSeats=dinnerTables.reduce((s,t)=>s+t.seats,0);
+  const roomBeds=rooms.reduce((s,rr)=>s+rr.cap,0);
+
+  // payments
+  let roomC=0,contrib=0,recep=0;
+  r.rows.forEach(x=>{if(x.l.indexOf('Room exclusivity')===0||x.l.indexOf('Extra beds')===0)roomC+=x.amt;else if(x.credit)contrib+=-x.amt;else recep+=x.amt;});
+  const excl=roomC-contrib, dep=5000, recRemain=recep-dep;
+  const payLines=[{k:'deposit',a:dep},{k:'exclusivity',a:excl},{k:'reception',a:recRemain}];
+  let paidAmt=0; payLines.forEach(l=>{if(payState[l.k])paidAmt+=l.a;});
+
+  // tasks
+  const doneCount=tasks.filter(t=>t.done).length;
+  const sortedT=tasks.slice().sort((a,b)=>ckDue(a)-ckDue(b));
+  const nextTask=sortedT.find(t=>!t.done);
+
+  // vendors
+  let vTot=0,vBook=0;
+  VENDOR_LIST.forEach(gp=>gp.vendors.forEach(v=>{vTot++;const st=(vstate[vid(gp.cat,v.name)]||{}).status;if(st==='booked')vBook++;}));
+
+  // notes
+  const noteCount=notes.length;
+  const lastNote=notes[0];
+
+  // vendor budgets
+  const vs=vendorSum();
+
+  const cards=[
+    {tab:'budget',label:'Budget',primary:eur(r.total+vs),meta:eur(r.total)+' venue &middot; '+eur(vs)+' outside'},
+    {tab:'guests',label:'Guests',primary:gLikely+' <em>likely</em>',meta:guests.length+' total &middot; '+gMaybe+' maybe &middot; '+gNo+' no'},
+    {tab:'rooms',label:'Rooms',primary:gRoom+' / '+roomBeds+' <em>placed</em>',meta:rooms.length+' rooms &middot; '+Math.max(0,roomBeds-gRoom)+' beds open'},
+    {tab:'seating',label:'Seating',primary:gSeat+' / '+totalSeats+' <em>seated</em>',meta:dinnerTables.length+' tables &middot; '+Math.max(0,totalSeats-gSeat)+' seats open'},
+    {tab:'vendors',label:'Vendors',primary:vBook+' / '+vTot+' <em>booked</em>',meta:'across '+VENDOR_LIST.length+' categories'},
+    {tab:'plan',label:'Payments',primary:eur(paidAmt),meta:eur(Math.max(0,r.total-paidAmt))+' remaining'},
+    {tab:'plan',label:'To-do',primary:doneCount+' / '+tasks.length+' <em>done</em>',meta:nextTask?'next: '+esc(nextTask.text):'all done ✓'},
+    {tab:'notes',label:'Notes',primary:noteCount+' <em>entr'+(noteCount===1?'y':'ies')+'</em>',meta:lastNote?'last: '+esc(lastNote.body.slice(0,54))+(lastNote.body.length>54?'…':''):'log a thought when it comes to you'}
+  ];
+
+  el.innerHTML=cards.map(c=>
+    '<div class="homecard" data-gohome="'+c.tab+'">'+
+      '<div class="hc-label">'+c.label+'</div>'+
+      '<div class="hc-primary">'+c.primary+'</div>'+
+      '<div class="hc-meta">'+c.meta+'</div>'+
+      '<div class="hc-arrow">open '+c.label.toLowerCase()+' →</div>'+
+    '</div>'
+  ).join('');
+}
+document.getElementById('pane-home').addEventListener('click',e=>{
+  const card=e.target.closest('[data-gohome]');
+  if(!card)return;
+  const targetTab=card.dataset.gohome;
+  const btn=document.querySelector('.tab[data-tab="'+targetTab+'"]');
+  if(btn){btn.click();window.scrollTo({top:0,behavior:'smooth'});}
+});
+
 function renderCountdown(){
   const el=document.getElementById('countdown');if(!el||!state.checkin)return;
   const d=new Date(state.checkin+'T16:00:00');
@@ -854,7 +934,7 @@ document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{
 render();
 
 /* ============ TABS ============ */
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['budget','guests','rooms','seating','vendors','plan','travel','notes'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['home','budget','guests','rooms','seating','vendors','plan','travel','notes'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
 
 /* ============ PLANNER: guests + rooms ============ */
 function esc(x){return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -1151,6 +1231,7 @@ document.getElementById('copyexport').addEventListener('click',()=>{const t=docu
 let _selectedGuestId = null;
 
 function renderSeating(){
+  renderHome();
   const totalSeats=dinnerTables.reduce((s,t)=>s+t.seats,0);
   const seated=guests.filter(g=>g.dinnerTable!=null).length;
   const off=guests.filter(g=>g.status==='likely'&&g.dinnerTable==null).length;
@@ -1428,6 +1509,7 @@ const VENDOR_LIST=[
 let vstate={};
 function vid(cat,name){return (cat+'-'+name).toLowerCase().replace(/[^a-z0-9]+/g,'-');}
 function renderVendors(){
+  renderHome();
   let total=0,booked=0,contacted=0;
   VENDOR_LIST.forEach(gp=>gp.vendors.forEach(v=>{total++;const st=(vstate[vid(gp.cat,v.name)]||{}).status;if(st==='booked')booked++;else if(st==='contacted')contacted++;}));
   document.getElementById('vsum').innerHTML=total+' recommended \u00b7 <b>'+booked+'</b> booked \u00b7 '+contacted+' contacted';
@@ -1472,6 +1554,7 @@ let payState={deposit:true};
 function ckDue(t){if(t.date)return new Date(t.date+'T00:00:00');const a=state.checkin.split('-').map(Number);const dt=new Date(a[0],a[1]-1,a[2]);dt.setDate(dt.getDate()-t.before);return dt;}
 function fmtD(dt){return WD[dt.getDay()]+' '+dt.getDate()+' '+MO[dt.getMonth()]+' '+dt.getFullYear();}
 function renderChecklist(){
+  renderHome();
   const today=new Date();today.setHours(0,0,0,0);
   const sorted=tasks.slice().sort((a,b)=>ckDue(a)-ckDue(b));
   const done=tasks.filter(t=>t.done).length;const next=sorted.find(t=>!t.done);
@@ -1479,6 +1562,7 @@ function renderChecklist(){
   document.getElementById('checklist').innerHTML=sorted.map(t=>{const due=ckDue(t);const over=!t.done&&due<today;return '<div class="task'+(t.done?' done':'')+(over?' overdue':'')+'"><button class="tcheck" data-ck="toggle" data-id="'+t.id+'">'+(t.done?'\u2713':'')+'</button><div class="tbody"><div class="ttext">'+esc(t.text)+'</div><div class="tdue">'+fmtD(due)+(over?' \u00b7 overdue':'')+'</div></div><button class="tdel" data-ck="del" data-id="'+t.id+'">\u00d7</button></div>';}).join('');
 }
 function renderPayments(){
+  renderHome();
   const r=compute();let roomC=0,contrib=0,recep=0;
   r.rows.forEach(x=>{if(x.l.indexOf('Room exclusivity')===0||x.l.indexOf('Extra beds')===0)roomC+=x.amt;else if(x.credit)contrib+=-x.amt;else recep+=x.amt;});
   const excl=roomC-contrib,dep=5000,recRemain=recep-dep,T=r.total;
@@ -1490,8 +1574,8 @@ function renderPayments(){
 function renderTimeline(){
   document.getElementById('timeline').innerHTML=timeline.map((d,di)=>{const items=d.items.map((it,ii)=>'<div class="titem"><input class="ttime" data-tl="time" data-d="'+di+'" data-i="'+ii+'" value="'+esc(it.time)+'"><input class="tact" data-tl="act" data-d="'+di+'" data-i="'+ii+'" value="'+esc(it.act)+'"><button data-tl="del" data-d="'+di+'" data-i="'+ii+'">\u00d7</button></div>').join('');return '<div class="tday"><div class="tdayhead"><input data-tl="day" data-d="'+di+'" value="'+esc(d.day)+'"></div>'+items+'<button class="tadd" data-tl="add" data-d="'+di+'">+ add item</button></div>';}).join('');
 }
-function renderPlan(){renderChecklist();renderPayments();renderTimeline();}
-planHook=()=>{renderChecklist();renderPayments();};
+function renderPlan(){renderChecklist();renderPayments();renderTimeline();renderHome();}
+planHook=()=>{renderChecklist();renderPayments();renderHome();};
 
 /* ============ NOTES ============ */
 function fmtNoteWhen(iso){
@@ -1507,6 +1591,7 @@ function fmtNoteWhen(iso){
 }
 function noteAuthor(email){return email?email.split('@')[0]:'someone';}
 function renderNotes(){
+  renderHome();
   const c=notes.length;
   document.getElementById('nsum').innerHTML='<b>'+c+'</b> note'+(c===1?'':'s');
   document.getElementById('notelist').innerHTML=notes.map(n=>

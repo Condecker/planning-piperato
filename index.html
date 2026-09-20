@@ -915,9 +915,12 @@ function downloadGuestCSV(){
   URL.revokeObjectURL(url);
 }
 document.getElementById('dlcsv').addEventListener('click',downloadGuestCSV);
-document.getElementById('fxtoggle').addEventListener('click',()=>{
+document.getElementById('fxtoggle').addEventListener('click',async ()=>{
+  // If flipping to USD but the rate hasn't arrived yet, fetch it first so
+  // eur() actually converts instead of silently falling back to EUR.
+  if(state.currency==='EUR'&&!_fxRate){await loadFxRate();}
   state.currency=state.currency==='USD'?'EUR':'USD';
-  updateFxLabel();render();renderRooms();renderPlan();saveSettings();
+  updateFxLabel();render();renderRooms();renderPlan();renderHome();saveSettings();
 });
 
 document.querySelectorAll('[data-group]').forEach(grp=>{const k=grp.dataset.group;grp.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{state[k]=c.dataset.value;render();saveSettings();}));});

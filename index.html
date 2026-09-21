@@ -214,6 +214,22 @@
   .seat.dragging{opacity:.4}
   .seat-empty-cell{background:transparent;border:none;min-height:1px}
 
+  /* Vendor tab: add-forms, delete buttons, empty categories */
+  .vform{background:var(--surface);border:1px solid var(--brass);border-radius:12px;padding:14px 14px 12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 14px rgba(184,143,90,.12)}
+  .vform-title{font-family:var(--display);font-style:italic;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:2px}
+  .vform input,.vform select{width:100%;font-family:var(--body);font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+  .vform input:focus,.vform select:focus{outline:1px solid var(--brass);border-color:var(--brass)}
+  .vform-actions{display:flex;gap:8px;margin-top:2px}
+  .vcard{position:relative}
+  .vcard-del{position:absolute;top:8px;right:8px;width:22px;height:22px;border:1px solid var(--line);background:#fff;border-radius:50%;font-size:15px;line-height:1;padding:0;cursor:pointer;color:var(--ink-soft);opacity:0;transition:all .15s ease;z-index:2;font-weight:700}
+  .vcard:hover .vcard-del{opacity:1}
+  .vcard-del:hover{color:#fff;background:var(--clay);border-color:var(--clay)}
+  @media (hover:none) and (pointer:coarse){.vcard-del{opacity:.7}}
+  .vcat{display:flex;align-items:center;gap:8px}
+  .vcat-del{border:none;background:transparent;color:var(--ink-soft);font-size:15px;cursor:pointer;padding:0 4px;line-height:1;font-weight:700}
+  .vcat-del:hover{color:var(--clay)}
+  .vcat-empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:12px 14px;color:var(--ink-soft);font-family:var(--display);font-style:italic;font-size:13px;margin-bottom:8px}
+
   /* seat picker modal (click empty seat → pick guest) */
   .seat-modal{position:fixed;inset:0;background:rgba(46,59,72,.55);backdrop-filter:blur(3px);z-index:110;display:none;align-items:flex-start;justify-content:center;padding:60px 18px 18px}
   .seat-modal.show{display:flex}
@@ -530,9 +546,14 @@
   </div>
 
   <div class="tabpane" id="pane-vendors">
-    <div class="glab" style="margin-top:8px">Recommended vendors</div>
+    <div class="glab" style="margin-top:8px">Vendors</div>
     <div class="psum" id="vsum"></div>
-    <div class="note" style="margin-top:0;margin-bottom:12px">Amastuola’s recommended suppliers. Set a status and jot notes as you reach out — everything saves automatically.</div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Amastuola's recommended suppliers are pre-loaded. Set a status, jot notes, and add your own vendors or categories as you go.</div>
+    <div class="addrow">
+      <button class="btn" id="vaddvendor">+ Add vendor</button>
+      <button class="btn ghost" id="vaddcategory">+ Add category</button>
+    </div>
+    <div id="vform-slot"></div>
     <div id="vendorbook"></div>
   </div>
 
@@ -647,22 +668,14 @@ function saveDinnerTable(t) {
 function deleteDinnerTable(id) {
   db.from('dinner_tables').delete().eq('id', id).then(_dbErr('deleteDinnerTable'));
 }
-let _vendorMeta = null;
-function _ensureVendorMeta() {
-  if (_vendorMeta) return;
-  _vendorMeta = {};
-  VENDOR_LIST.forEach(gp => gp.vendors.forEach(v => {
-    _vendorMeta[vid(gp.cat, v.name)] = { category: gp.cat, name: v.name, contact: v.contact };
-  }));
-}
-function saveVendor(id) {
-  _ensureVendorMeta();
-  const s = vstate[id] || {status:'', notes:''};
-  const m = _vendorMeta[id] || {};
+function saveVendor(v) {
   db.from('vendors').upsert({
-    id, category: m.category ?? null, name: m.name ?? null, contact: m.contact ?? null,
-    status: s.status || '', notes: s.notes || ''
+    id: v.id, category: v.category ?? null, name: v.name ?? null, contact: v.contact ?? null,
+    status: v.status || '', notes: v.notes || ''
   }).then(_dbErr('saveVendor'));
+}
+function deleteVendor(id) {
+  db.from('vendors').delete().eq('id', id).then(_dbErr('deleteVendor'));
 }
 function saveTask(t) {
   db.from('tasks').upsert({
@@ -767,7 +780,7 @@ let A_STAYING=48,A_EXTRA_BEDS=12; // staying guests & extra beds in use, synced 
 let planHook=null; // lets the Plan tab refresh when the budget/date changes
 const VENDORS=[{id:'planner',label:'Wedding planner',max:15000,def:7500},{id:'photo',label:'Photo + video',max:12000,def:6000},{id:'florals',label:'Florals & décor',max:12000,def:5000},{id:'music',label:'Music · DJ or band',max:8000,def:3500},{id:'hmu',label:'Hair & makeup',max:4000,def:1500},{id:'transport',label:'Guest transport',max:6000,def:2000},{id:'other',label:'Attire, rings & buffer',max:15000,def:1000}];
 
-let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0,currency:'EUR',vendorBudgets:Object.fromEntries(VENDORS.map(v=>[v.id,v.def]))};
+let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0,currency:'EUR',customCategories:[],vendorBudgets:Object.fromEntries(VENDORS.map(v=>[v.id,v.def]))};
 
 function roomCost(){
   const nights=[];let total=0,allAvail=true;
@@ -886,7 +899,7 @@ function renderHome(){
 
   // vendors
   let vTot=0,vBook=0;
-  VENDOR_LIST.forEach(gp=>gp.vendors.forEach(v=>{vTot++;const st=(vstate[vid(gp.cat,v.name)]||{}).status;if(st==='booked')vBook++;}));
+  vendorsCatalog.forEach(v=>{vTot++;if(v.status==='booked')vBook++;});
 
   // notes
   const noteCount=notes.length;
@@ -900,7 +913,7 @@ function renderHome(){
     {tab:'guests',label:'Guests',primary:gLikely+' <em>likely</em>',meta:guests.length+' total &middot; '+gMaybe+' maybe &middot; '+gNo+' no'},
     {tab:'rooms',label:'Rooms',primary:gRoom+' / '+roomBeds+' <em>placed</em>',meta:rooms.length+' rooms &middot; '+Math.max(0,roomBeds-gRoom)+' beds open'},
     {tab:'seating',label:'Seating',primary:gSeat+' / '+totalSeats+' <em>seated</em>',meta:dinnerTables.length+' tables &middot; '+Math.max(0,totalSeats-gSeat)+' seats open'},
-    {tab:'vendors',label:'Vendors',primary:vBook+' / '+vTot+' <em>booked</em>',meta:'across '+VENDOR_LIST.length+' categories'},
+    {tab:'vendors',label:'Vendors',primary:vBook+' / '+vTot+' <em>booked</em>',meta:'across '+new Set(vendorsCatalog.map(v=>v.category)).size+' categories'},
     {tab:'plan',label:'Payments',primary:eur(paidAmt),meta:eur(Math.max(0,r.total-paidAmt))+' remaining'},
     {tab:'plan',label:'To-do',primary:doneCount+' / '+tasks.length+' <em>done</em>',meta:nextTask?'next: '+esc(nextTask.text):'all done ✓'},
     {tab:'notes',label:'Notes',primary:noteCount+' <em>entr'+(noteCount===1?'y':'ies')+'</em>',meta:lastNote?'last: '+esc(lastNote.body.slice(0,54))+(lastNote.body.length>54?'…':''):'log a thought when it comes to you'}
@@ -1095,8 +1108,11 @@ async function hydrate(){
       dinnerTables = dtr.data.map(t => ({id:t.id, name:t.name, seats:t.seats}));
     }
     if (vr.data && vr.data.length) {
-      vstate = {};
-      vr.data.forEach(v => { vstate[v.id] = {status:v.status||'', notes:v.notes||''}; });
+      vendorsCatalog = vr.data.map(v => ({
+        id: v.id, category: v.category || 'Uncategorized',
+        name: v.name || '', contact: v.contact || '',
+        status: v.status || '', notes: v.notes || ''
+      }));
     }
     if (tr.data && tr.data.length) {
       tasks = tr.data.map(t => {
@@ -1613,23 +1629,168 @@ const VENDOR_LIST=[
    {name:'Antonio Luc\u00e0',contact:'+39 389 174 2857 \u00b7 aellephotography@gmail.com'},
    {name:'Amarillis Fotografi',contact:'+39 349 239 9457 \u00b7 info@amarilisphotography.com'}]}
 ];
-let vstate={};
 function vid(cat,name){return (cat+'-'+name).toLowerCase().replace(/[^a-z0-9]+/g,'-');}
+/* vendorsCatalog is the source of truth (seeded from VENDOR_LIST on init,
+   replaced by DB rows on hydrate). */
+let vendorsCatalog = [];
+VENDOR_LIST.forEach(gp => gp.vendors.forEach(v => {
+  vendorsCatalog.push({id: vid(gp.cat, v.name), category: gp.cat, name: v.name, contact: v.contact, status: '', notes: ''});
+}));
+function generateVendorId(category, name){
+  const base = vid(category, name); let id = base, n = 1;
+  while (vendorsCatalog.some(v => v.id === id)) { n++; id = base + '-' + n; }
+  return id;
+}
+function allCategories(){
+  const seen = new Set();
+  vendorsCatalog.forEach(v => seen.add(v.category));
+  (state.customCategories || []).forEach(c => seen.add(c));
+  return Array.from(seen);
+}
 function renderVendors(){
   renderHome();
-  let total=0,booked=0,contacted=0;
-  VENDOR_LIST.forEach(gp=>gp.vendors.forEach(v=>{total++;const st=(vstate[vid(gp.cat,v.name)]||{}).status;if(st==='booked')booked++;else if(st==='contacted')contacted++;}));
-  document.getElementById('vsum').innerHTML=total+' recommended \u00b7 <b>'+booked+'</b> booked \u00b7 '+contacted+' contacted';
-  document.getElementById('vendorbook').innerHTML=VENDOR_LIST.map(gp=>{
-    const cards=gp.vendors.map(v=>{const id=vid(gp.cat,v.name);const st=vstate[id]||{};const cur=st.status||'';
-      return '<div class="vcard"><div class="vname">'+esc(v.name)+'</div><div class="vcontact">'+esc(v.contact)+'</div><div class="vstatus"><button class="mini'+(cur==='maybe'?' on-vmaybe':'')+'" data-vact="status" data-vid="'+id+'" data-val="maybe">Maybe</button><button class="mini'+(cur==='contacted'?' on-vcontact':'')+'" data-vact="status" data-vid="'+id+'" data-val="contacted">Contacted</button><button class="mini'+(cur==='booked'?' on-vbook':'')+'" data-vact="status" data-vid="'+id+'" data-val="booked">Booked</button></div><textarea class="vnotes" data-vid="'+id+'" placeholder="Notes \u2014 quote, availability, vibe\u2026">'+esc(st.notes||'')+'</textarea></div>';
-    }).join('');
-    return '<div class="vgroup"><div class="vcat">'+esc(gp.cat)+'</div>'+cards+'</div>';
+  const total = vendorsCatalog.length;
+  const booked = vendorsCatalog.filter(v => v.status === 'booked').length;
+  const contacted = vendorsCatalog.filter(v => v.status === 'contacted').length;
+  document.getElementById('vsum').innerHTML = total + ' vendor' + (total===1?'':'s') + ' &middot; <b>' + booked + '</b> booked &middot; ' + contacted + ' contacted';
+  const cats = allCategories();
+  const byCat = {};
+  cats.forEach(c => byCat[c] = []);
+  vendorsCatalog.forEach(v => { if (!byCat[v.category]) byCat[v.category] = []; byCat[v.category].push(v); });
+  document.getElementById('vendorbook').innerHTML = Object.keys(byCat).map(cat => {
+    const vends = byCat[cat] || [];
+    const canDeleteCat = vends.length === 0;
+    const cards = vends.map(v => {
+      const cur = v.status || '';
+      return '<div class="vcard">' +
+        '<button class="vcard-del" data-vdel="' + v.id + '" title="Remove vendor" aria-label="Remove">×</button>' +
+        '<div class="vname">' + esc(v.name) + '</div>' +
+        '<div class="vcontact">' + esc(v.contact) + '</div>' +
+        '<div class="vstatus">' +
+          '<button class="mini' + (cur==='maybe'?' on-vmaybe':'') + '" data-vact="status" data-vid="' + v.id + '" data-val="maybe">Maybe</button>' +
+          '<button class="mini' + (cur==='contacted'?' on-vcontact':'') + '" data-vact="status" data-vid="' + v.id + '" data-val="contacted">Contacted</button>' +
+          '<button class="mini' + (cur==='booked'?' on-vbook':'') + '" data-vact="status" data-vid="' + v.id + '" data-val="booked">Booked</button>' +
+        '</div>' +
+        '<textarea class="vnotes" data-vid="' + v.id + '" placeholder="Notes — quote, availability, vibe…">' + esc(v.notes||'') + '</textarea>' +
+      '</div>';
+    }).join('') || '<div class="vcat-empty">No vendors here yet. Use + Add vendor above.</div>';
+    return '<div class="vgroup">' +
+      '<div class="vcat">' + esc(cat) +
+        (canDeleteCat ? ' <button class="vcat-del" data-catdel="' + esc(cat) + '" title="Remove empty category">×</button>' : '') +
+      '</div>' +
+      cards +
+      '</div>';
   }).join('');
 }
-document.getElementById('pane-vendors').addEventListener('click',e=>{const b=e.target.closest('[data-vact]');if(!b)return;const id=b.dataset.vid;vstate[id]=vstate[id]||{status:'',notes:''};vstate[id].status=(vstate[id].status===b.dataset.val?'':b.dataset.val);saveVendor(id);renderVendors();});
-document.getElementById('pane-vendors').addEventListener('input',e=>{if(e.target.classList.contains('vnotes')){const id=e.target.dataset.vid;vstate[id]=vstate[id]||{status:'',notes:''};vstate[id].notes=e.target.value;}});
-document.getElementById('pane-vendors').addEventListener('change',e=>{if(e.target.classList.contains('vnotes'))saveVendor(e.target.dataset.vid);});
+
+function openAddVendorForm(){
+  const opts = allCategories().map(c => '<option value="' + esc(c) + '">' + esc(c) + '</option>').join('') +
+    '<option value="__new__">+ New category…</option>';
+  document.getElementById('vform-slot').innerHTML =
+    '<div class="vform">' +
+      '<div class="vform-title">Add vendor</div>' +
+      '<input id="vf-name" placeholder="Vendor name" autocomplete="off">' +
+      '<input id="vf-contact" placeholder="Contact (phone · email · IG)" autocomplete="off">' +
+      '<select id="vf-cat">' + opts + '</select>' +
+      '<input id="vf-newcat" placeholder="New category name" autocomplete="off" style="display:none">' +
+      '<div class="vform-actions"><button class="btn" id="vf-save">Add vendor</button><button class="btn ghost" id="vf-cancel">Cancel</button></div>' +
+    '</div>';
+  setTimeout(() => document.getElementById('vf-name').focus(), 50);
+}
+function openAddCategoryForm(){
+  document.getElementById('vform-slot').innerHTML =
+    '<div class="vform">' +
+      '<div class="vform-title">Add category</div>' +
+      '<input id="cf-name" placeholder="e.g. Officiant, Transport, Cake" autocomplete="off">' +
+      '<div class="vform-actions"><button class="btn" id="cf-save">Add category</button><button class="btn ghost" id="cf-cancel">Cancel</button></div>' +
+    '</div>';
+  setTimeout(() => document.getElementById('cf-name').focus(), 50);
+}
+function closeVForm(){ document.getElementById('vform-slot').innerHTML = ''; }
+
+document.getElementById('vaddvendor').addEventListener('click', openAddVendorForm);
+document.getElementById('vaddcategory').addEventListener('click', openAddCategoryForm);
+
+document.getElementById('vform-slot').addEventListener('click', e => {
+  if (e.target.id === 'vf-cancel' || e.target.id === 'cf-cancel') { closeVForm(); return; }
+  if (e.target.id === 'vf-save') {
+    const name = document.getElementById('vf-name').value.trim();
+    const contact = document.getElementById('vf-contact').value.trim();
+    const catSel = document.getElementById('vf-cat').value;
+    const newCat = document.getElementById('vf-newcat').value.trim();
+    const cat = catSel === '__new__' ? newCat : catSel;
+    if (!name || !cat) { alert('Name and category are required.'); return; }
+    const nv = { id: generateVendorId(cat, name), category: cat, name, contact, status: '', notes: '' };
+    vendorsCatalog.push(nv);
+    saveVendor(nv);
+    closeVForm();
+    renderVendors();
+    return;
+  }
+  if (e.target.id === 'cf-save') {
+    const name = document.getElementById('cf-name').value.trim();
+    if (!name) return;
+    state.customCategories = state.customCategories || [];
+    if (!state.customCategories.includes(name) && !allCategories().includes(name)) {
+      state.customCategories.push(name);
+      saveSettings();
+    }
+    closeVForm();
+    renderVendors();
+    return;
+  }
+});
+document.getElementById('vform-slot').addEventListener('change', e => {
+  if (e.target.id === 'vf-cat') {
+    const nc = document.getElementById('vf-newcat');
+    nc.style.display = e.target.value === '__new__' ? 'block' : 'none';
+    if (e.target.value === '__new__') setTimeout(() => nc.focus(), 30);
+  }
+});
+document.getElementById('vform-slot').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.target.id === 'cf-name' || e.target.id === 'vf-newcat' || e.target.id === 'vf-contact' || e.target.id === 'vf-name')) {
+    e.preventDefault();
+    document.getElementById(e.target.id === 'cf-name' ? 'cf-save' : 'vf-save').click();
+  }
+});
+
+document.getElementById('pane-vendors').addEventListener('click', e => {
+  const del = e.target.closest('[data-vdel]');
+  if (del) {
+    const id = del.dataset.vdel;
+    vendorsCatalog = vendorsCatalog.filter(v => v.id !== id);
+    deleteVendor(id);
+    renderVendors();
+    return;
+  }
+  const catdel = e.target.closest('[data-catdel]');
+  if (catdel) {
+    const cat = catdel.dataset.catdel;
+    state.customCategories = (state.customCategories || []).filter(c => c !== cat);
+    saveSettings();
+    renderVendors();
+    return;
+  }
+  const b = e.target.closest('[data-vact]');
+  if (!b) return;
+  const v = vendorsCatalog.find(x => x.id === b.dataset.vid);
+  if (!v) return;
+  v.status = (v.status === b.dataset.val ? '' : b.dataset.val);
+  saveVendor(v);
+  renderVendors();
+});
+document.getElementById('pane-vendors').addEventListener('input', e => {
+  if (e.target.classList.contains('vnotes')) {
+    const v = vendorsCatalog.find(x => x.id === e.target.dataset.vid);
+    if (v) v.notes = e.target.value;
+  }
+});
+document.getElementById('pane-vendors').addEventListener('change', e => {
+  if (e.target.classList.contains('vnotes')) {
+    const v = vendorsCatalog.find(x => x.id === e.target.dataset.vid);
+    if (v) saveVendor(v);
+  }
+});
 
 
 /* ============ PLAN: checklist, payments, timeline ============ */

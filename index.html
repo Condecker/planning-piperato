@@ -53,12 +53,6 @@
   .night.na{border-color:var(--clay);background:#f6e7e2}
   .night.na .p{color:var(--clay);font-size:13px}
 
-  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-  .preset{flex:1;min-width:110px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:11px 10px;border-radius:10px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:.15s}
-  .preset:hover{background:var(--ink);color:#F4EFE2}
-  .preset.rec{border-color:var(--brass);color:#6f5118}
-  .preset.rec:hover{background:var(--brass);color:#fff}
-  .pnote{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-bottom:6px}
 
   .note{font-family:var(--mono);font-size:11px;color:var(--olive);margin-bottom:12px;line-height:1.5}
   .note.warn{color:var(--clay)}
@@ -343,14 +337,6 @@
     <div class="fig" id="total">—</div>
     <div class="meta"><span id="perguest">—</span><span>vendors &amp; all-in below ↓</span></div>
   </div>
-
-  <div class="glab" style="margin-top:18px">Presets</div>
-  <div class="presets">
-    <button class="preset rec" data-preset="rec">Claude's pick</button>
-    <button class="preset" data-preset="cheap">Cheapest</button>
-    <button class="preset" data-preset="splurge">Splurge</button>
-  </div>
-  <div class="pnote">Presets set the options below — they leave your date, guest count and vendor sliders alone.</div>
 
   <div class="glab">Your dates</div>
   <div class="field">
@@ -744,9 +730,6 @@ let planHook=null; // lets the Plan tab refresh when the budget/date changes
 const VENDORS=[{id:'planner',label:'Wedding planner',max:15000,def:7500},{id:'photo',label:'Photo + video',max:12000,def:6000},{id:'florals',label:'Florals & décor',max:12000,def:5000},{id:'music',label:'Music · DJ or band',max:8000,def:3500},{id:'hmu',label:'Hair & makeup',max:4000,def:1500},{id:'transport',label:'Guest transport',max:6000,def:2000},{id:'other',label:'Attire, rings & buffer',max:15000,def:1000}];
 
 let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0,currency:'EUR',vendorBudgets:Object.fromEntries(VENDORS.map(v=>[v.id,v.def]))};
-const PRESETS={rec:{menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0},
-  cheap:{menu:'calaprice',abar:'none',ext:'0',welcome:'none',brunch:'off',ceremony:'symbolic',olive:'off',contrib:'150',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0},
-  splurge:{menu:'centosassi',abar:'ck4',ext:'2',welcome:'winedinner',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'on',dessert:'on',icecream:'on',rum:'on',prosecco:'on',fireworks:'on',kids:0}};
 
 function roomCost(){
   const nights=[];let total=0,allAvail=true;
@@ -948,7 +931,6 @@ document.getElementById('kids').addEventListener('input',e=>{state.kids=Number(e
 document.getElementById('abar').addEventListener('change',e=>{state.abar=e.target.value;render();saveSettings();});
 VENDORS.forEach(v=>document.getElementById('v-'+v.id).addEventListener('input',e=>{state.vendorBudgets=state.vendorBudgets||{};state.vendorBudgets[v.id]=Number(e.target.value);render();saveSettings();}));
 function syncSlidersFromState(){if(!state.vendorBudgets)return;VENDORS.forEach(v=>{const el=document.getElementById('v-'+v.id),val=state.vendorBudgets[v.id];if(el&&val!=null)el.value=val;});}
-document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{Object.assign(state,PRESETS[b.dataset.preset]);render();saveSettings();}));
 
 render();
 

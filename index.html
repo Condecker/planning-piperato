@@ -211,6 +211,24 @@
   .seat.dragging{opacity:.4}
   .seat-empty-cell{background:transparent;border:none;min-height:1px}
 
+  /* seat picker modal (click empty seat → pick guest) */
+  .seat-modal{position:fixed;inset:0;background:rgba(46,59,72,.55);backdrop-filter:blur(3px);z-index:110;display:none;align-items:flex-start;justify-content:center;padding:60px 18px 18px}
+  .seat-modal.show{display:flex}
+  .sm-card{background:var(--surface);border-radius:16px;padding:20px 20px 16px;max-width:380px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:78vh;display:flex;flex-direction:column}
+  .sm-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+  .sm-title{font-family:var(--display);font-style:italic;font-size:22px;font-weight:600;color:var(--ink)}
+  .sm-close{border:none;background:transparent;font-size:22px;cursor:pointer;color:var(--ink-soft);padding:0 6px;line-height:1}
+  .sm-close:hover{color:var(--clay)}
+  .sm-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--sky);margin-bottom:14px}
+  .sm-search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-size:15px;margin-bottom:10px;font-family:var(--body)}
+  .sm-search:focus{outline:1px solid var(--brass);border-color:var(--brass)}
+  .sm-list{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:5px;min-height:120px}
+  .sm-item{padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:9px;font-size:14px;cursor:pointer;transition:.12s;text-align:left;color:var(--ink);font-family:var(--body);font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .sm-item:hover{border-color:var(--brass);background:var(--brass-pale)}
+  .sm-item .sm-tags{font-family:var(--mono);font-size:10px;color:var(--ink-soft);font-weight:400;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+  .sm-item.seated .sm-tags{color:var(--sky)}
+  .sm-empty{text-align:center;padding:20px;color:var(--ink-soft);font-family:var(--display);font-style:italic;font-size:14px}
+
   .table-orphans{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;background:#fdf5e0;border:1px dashed #e2cfa3;border-radius:9px;margin-bottom:10px}
   .table-orphans-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6f5118;width:100%;margin-bottom:2px}
   .table-orphans .up-chip{font-size:11.5px;padding:4px 8px}
@@ -307,6 +325,19 @@
     </form>
   </div>
 </div>
+
+<div id="seat-modal" class="seat-modal" role="dialog" aria-modal="true">
+  <div class="sm-card">
+    <div class="sm-head">
+      <div class="sm-title">Who sits here?</div>
+      <button class="sm-close" aria-label="Close">×</button>
+    </div>
+    <div class="sm-sub" id="sm-sub"></div>
+    <input class="sm-search" id="sm-search" placeholder="Search guests…" autocomplete="off">
+    <div class="sm-list" id="sm-list"></div>
+  </div>
+</div>
+
 <div class="wrap">
 
   <div class="whead">
@@ -1395,9 +1426,73 @@ document.getElementById('pane-seating').addEventListener('click',e=>{
       _selectedGuestId=null;renderSeating();
     } else if(occupant){
       _selectedGuestId=occupant.id;renderSeating();
+    } else {
+      // empty seat + nothing selected → open picker modal
+      openSeatPicker(tid,si);
     }
     return;
   }
+});
+
+/* Seat picker modal — click an empty seat to browse everyone */
+let _pickerCtx = null;
+function openSeatPicker(tid, si){
+  _pickerCtx = {tid, si};
+  const table = dinnerTables.find(t => t.id === tid);
+  document.getElementById('sm-sub').textContent = (table?.name || 'Table') + ' · seat ' + (si + 1);
+  const s = document.getElementById('sm-search'); s.value = '';
+  renderPickerList('');
+  document.getElementById('seat-modal').classList.add('show');
+  setTimeout(() => s.focus(), 60);
+}
+function closeSeatPicker(){
+  _pickerCtx = null;
+  document.getElementById('seat-modal').classList.remove('show');
+}
+function renderPickerList(filter){
+  const q = filter.toLowerCase().trim();
+  const matches = guests
+    .filter(g => g.status !== 'no')
+    .filter(g => !q || g.name.toLowerCase().includes(q))
+    .sort((a, b) => {
+      const aSeated = a.dinnerTable != null && a.dinnerSeat != null;
+      const bSeated = b.dinnerTable != null && b.dinnerSeat != null;
+      if (aSeated !== bSeated) return aSeated ? 1 : -1;
+      return a.name.localeCompare(b.name);
+    });
+  const list = document.getElementById('sm-list');
+  if (!matches.length) { list.innerHTML = '<div class="sm-empty">No matches</div>'; return; }
+  list.innerHTML = matches.map(g => {
+    const seated = g.dinnerTable != null && g.dinnerSeat != null;
+    let tag;
+    if (seated) {
+      const t = dinnerTables.find(x => x.id === g.dinnerTable);
+      tag = 'at ' + (t?.name || 'table') + ' · seat ' + (g.dinnerSeat + 1);
+    } else {
+      const bits = [];
+      if (g.status === 'likely') bits.push('likely');
+      if (g.status === 'maybe') bits.push('maybe');
+      if (g.family) bits.push('family');
+      if (g.bridal) bits.push('bridal');
+      tag = bits.join(' · ');
+    }
+    return '<button class="sm-item' + (seated ? ' seated' : '') + '" data-gid="' + g.id + '"><span>' + esc(g.name) + '</span><span class="sm-tags">' + tag + '</span></button>';
+  }).join('');
+}
+document.getElementById('sm-search').addEventListener('input', e => renderPickerList(e.target.value));
+document.querySelector('.sm-close').addEventListener('click', closeSeatPicker);
+document.getElementById('seat-modal').addEventListener('click', e => {
+  if (e.target.id === 'seat-modal') closeSeatPicker();
+});
+document.getElementById('sm-list').addEventListener('click', e => {
+  const btn = e.target.closest('[data-gid]');
+  if (!btn || !_pickerCtx) return;
+  placeGuestInSeat(Number(btn.dataset.gid), _pickerCtx.tid, _pickerCtx.si);
+  closeSeatPicker();
+  renderSeating();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && _pickerCtx) closeSeatPicker();
 });
 
 /* Table name + seat count edits */

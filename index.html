@@ -205,6 +205,9 @@
   .seat.right{grid-column:3}
   .seat:hover:not(.filled){border-color:var(--brass);background:#fdfaf0}
   .seat.filled{background:var(--olive-pale);border:1px solid #cdd6b6;color:var(--ink);font-family:var(--body);font-size:12.5px;font-weight:600}
+  .seat-unseat{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border:1px solid var(--line);background:#fff;border-radius:50%;font-size:15px;line-height:1;padding:0;cursor:pointer;color:var(--ink-soft);display:none;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(46,59,72,.15);z-index:3;font-weight:700}
+  .seat.filled:hover .seat-unseat{display:flex}
+  .seat-unseat:hover{color:#fff;background:var(--clay);border-color:var(--clay)}
   .seat.filled:hover{border-color:var(--brass);background:#f0efd8}
   .seat.selected-src{background:var(--brass);border:1px solid var(--brass);color:#fff;box-shadow:0 2px 6px rgba(164,118,47,.3)}
   .seat.drop-target{background:#fff9e6;border-color:var(--brass);border-style:solid}
@@ -1338,7 +1341,8 @@ function seatCellHtml(tid, si, side, g){
   const cls='seat '+side+(g?' filled':'')+(g&&_selectedGuestId===g.id?' selected-src':'');
   const label=g?esc(g.name):(si+1);
   const drag=g?' draggable="true"':'';
-  return '<div class="'+cls+'" data-tid="'+tid+'" data-seat="'+si+'"'+drag+'>'+label+'</div>';
+  const unseat=g?'<button class="seat-unseat" data-unseat-gid="'+g.id+'" title="Unseat" aria-label="Unseat">−</button>':'';
+  return '<div class="'+cls+'" data-tid="'+tid+'" data-seat="'+si+'"'+drag+'>'+unseat+label+'</div>';
 }
 
 /* Core operation: assign or swap a guest into a seat.
@@ -1391,6 +1395,9 @@ document.getElementById('autoseat').addEventListener('click',()=>{
 
 /* Click delegation — handles tap-to-place, table remove, and orphan chips */
 document.getElementById('pane-seating').addEventListener('click',e=>{
+  // Unseat "−" button on a filled seat (check first — it's inside a .seat)
+  const u=e.target.closest('[data-unseat-gid]');
+  if(u){e.stopPropagation();unseatGuest(Number(u.dataset.unseatGid));_selectedGuestId=null;renderSeating();return;}
   // Table remove button
   const rm=e.target.closest('[data-sact="table-remove"]');
   if(rm){

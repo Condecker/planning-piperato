@@ -414,7 +414,7 @@
     <div class="chips" data-group="spritz"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€900 ≤80</span></button></div>
     <div class="incbadge" id="badge-spritz">✓ Included with Centosassi — no extra charge</div></div>
   <div class="field"><div class="flab"><span>Raw seafood corner</span></div>
-    <div class="chips" data-group="rawsea"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€1,000 / 50ppl</span></button></div></div>
+    <div class="chips" data-group="rawsea"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€1,000 up to 50 + €20/extra</span></button></div></div>
 
   <div class="glab">Sweet &amp; fun extras</div>
   <div class="field"><div class="flab"><span>Dessert &amp; fruit buffet</span></div>
@@ -434,12 +434,14 @@
   <div class="field"><div class="flab"><span>Welcome night (night 1)</span></div>
     <div class="chips" data-group="welcome">
       <button class="chip" data-value="none">Skip<span class="x">€0</span></button>
-      <button class="chip" data-value="pizza">Pizza party<span class="x">~€60pp</span></button>
-      <button class="chip" data-value="buffet">Apulian buffet<span class="x">~€75pp</span></button>
-      <button class="chip" data-value="winedinner">Wine dinner<span class="x">~€95pp</span></button>
+      <button class="chip" data-value="pizza">Pizza party<span class="x">€60pp</span></button>
+      <button class="chip" data-value="buffet">Apulian buffet<span class="x">€55pp</span></button>
+      <button class="chip" data-value="bbq">BBQ party<span class="x">€70pp</span></button>
+      <button class="chip" data-value="welcomedin">Welcome dinner<span class="x">€65pp</span></button>
+      <button class="chip" data-value="winedinner">Wine dinner<span class="x">€70pp</span></button>
     </div></div>
   <div class="field"><div class="flab"><span>Farewell brunch (night 3)</span></div>
-    <div class="chips" data-group="brunch"><button class="chip" data-value="off">Skip<span class="x">€0</span></button><button class="chip" data-value="on">BBQ brunch<span class="x">~€50pp</span></button></div></div>
+    <div class="chips" data-group="brunch"><button class="chip" data-value="off">Skip<span class="x">€0</span></button><button class="chip" data-value="on">Pool brunch<span class="x">€40pp</span></button></div></div>
   <div class="field"><div class="flab"><span>Ceremony</span></div>
     <div class="chips" data-group="ceremony">
       <button class="chip" data-value="symbolic">Symbolic<span class="x">on-site</span></button>
@@ -735,7 +737,7 @@ const PRICES={"2028-04-01":4900,"2028-04-02":4900,"2028-04-03":3900,"2028-04-04"
 
 const A_MENU={centosassi:{50:280,70:235,100:225,130:205,label:'Centosassi'},ondarosa:{50:250,70:205,100:195,130:175,label:'Ondarosa'},calaprice:{50:240,70:190,100:180,130:165,label:'Calaprice'}};
 const A_BAR={none:{base:0,extra:0,label:'No open bar'},bw1:{base:1100,extra:11,label:'Beer & wine · 1h'},bw2:{base:1650,extra:18,label:'Beer & wine · 2h'},bw3:{base:2150,extra:24,label:'Beer & wine · 3h'},bw4:{base:2800,extra:32,label:'Beer & wine · 4h'},ck1:{base:2100,extra:14,label:'Cocktails+ · 1h'},ck2:{base:2950,extra:28,label:'Cocktails+ · 2h'},ck3:{base:3900,extra:42,label:'Cocktails+ · 3h'},ck4:{base:5300,extra:55,label:'Cocktails+ · 4h'},cb100:{base:1100,extra:0,label:'Cocktail bar · 100'},cb250:{base:2200,extra:0,label:'Cocktail bar · 250'},cb350:{base:2900,extra:0,label:'Cocktail bar · 350'}};
-const A_WELCOME={none:0,pizza:60,buffet:75,winedinner:95};const A_WLABEL={pizza:'Pizza party',buffet:'Apulian buffet',winedinner:'Wine-pairing dinner'};
+const A_WELCOME={none:0,pizza:60,buffet:55,bbq:70,welcomedin:65,winedinner:70};const A_WLABEL={pizza:'Pizza party',buffet:'Apulian buffet',bbq:'BBQ party',welcomedin:'Welcome dinner',winedinner:'Wine-pairing dinner'};
 let A_ONSITE_BEDS=49; // total on-site beds
 let A_STAYING=48,A_EXTRA_BEDS=12; // staying guests & extra beds in use, synced from the Rooms tab
 let planHook=null; // lets the Plan tab refresh when the budget/date changes
@@ -765,12 +767,12 @@ function compute(){
   let billed=g,rate=m[bk],recCost=g*rate;[70,100,130].forEach(tc=>{if(tc>g){const c=tc*m[tc];if(c<recCost){recCost=c;billed=tc;rate=m[tc];}}});
   let cer=0;if(state.ceremony==='catholic')cer=1500;else{cer=g*10;if(state.olive==='on')cer+=500;if(state.ceremony==='civil')cer+=600;}
   const ab=A_BAR[state.abar];const bar=ab.base+(ab.extra?Math.max(0,g-80)*ab.extra:0);
-  const wel=g*A_WELCOME[state.welcome];const bru=state.brunch==='on'?g*50:0;const ext=Number(state.ext)*500;
+  const wel=g*A_WELCOME[state.welcome];const bru=state.brunch==='on'?g*40:0;const ext=Number(state.ext)*500;
   const cento=state.menu==='centosassi';const ex=[];
   if(!cento&&state.cheese==='on')ex.push({l:'Live cheesemaker corner',d:'€15pp',amt:g*15});
   if(!cento&&state.panzerotto==='on')ex.push({l:'Panzerotto & tempura',d:'€12pp',amt:g*12});
   if(!cento&&state.spritz==='on')ex.push({l:'Aperol spritz corner',d:'1.5h · ≤80 guests',amt:900+Math.max(0,g-80)*6});
-  if(state.rawsea==='on')ex.push({l:'Raw seafood corner',d:'per ~50 guests',amt:Math.ceil(g/50)*1000});
+  if(state.rawsea==='on')ex.push({l:'Raw seafood corner',d:'€1,000 for 50 · €20/extra guest',amt:1000+Math.max(0,g-50)*20});
   if(state.dessert==='on')ex.push({l:'Dessert & fruit buffet',d:'€15pp',amt:g*15});
   if(state.icecream==='on')ex.push({l:'Ice cream cart',d:'≤80 guests',amt:500+Math.max(0,g-80)*4});
   if(state.rum==='on')ex.push({l:'Rum, cigars & chocolate',d:'≤80 guests',amt:600+Math.max(0,g-80)*4});
@@ -902,7 +904,9 @@ document.getElementById('pane-home').addEventListener('click',e=>{
 
 function renderCountdown(){
   const el=document.getElementById('countdown');if(!el||!state.checkin)return;
+  // Wedding is the middle night of the 3-night block (check-in is arrival day)
   const d=new Date(state.checkin+'T16:00:00');
+  d.setDate(d.getDate()+1);
   const now=new Date();
   const days=Math.ceil((d-now)/86400000);
   const dateStr=d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});

@@ -12,6 +12,7 @@ create table if not exists line_items (
   id           bigint generated always as identity primary key,
   label        text not null,
   amount       numeric(10,2) not null default 0,
+  currency     text not null default 'EUR',  -- 'EUR' or 'USD' — what the vendor charged in
   category     text,                    -- vendor id ('photo', 'planner', …), 'venue', or 'other'
   paid_by      text,                    -- 'brian' | 'claudia' | 'other'
   paid_by_name text,                    -- optional name when paid_by='other'
@@ -20,6 +21,10 @@ create table if not exists line_items (
   position     int,
   created_at   timestamptz not null default now()
 );
+
+-- Idempotent add for people who ran an earlier version of this migration
+-- before the currency column existed. Safe to run any number of times.
+alter table line_items add column if not exists currency text not null default 'EUR';
 
 alter table line_items enable row level security;
 

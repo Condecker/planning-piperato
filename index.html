@@ -251,6 +251,19 @@
   .af-paidby{display:flex;flex-wrap:wrap;gap:12px;font-size:13.5px;padding:6px 2px}
   .af-pb{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
   .af-pb input{width:auto;padding:0}
+  .af-amount-row{display:flex;gap:8px;align-items:stretch}
+  .af-amount-row input{flex:1;min-width:0}
+  .af-curr-picker{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff;flex-shrink:0}
+  .af-curr-opt{display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink-soft);letter-spacing:.04em;transition:.15s;position:relative}
+  .af-curr-opt input{position:absolute;opacity:0;pointer-events:none}
+  .af-curr-opt span{padding:10px 12px;display:block}
+  .af-curr-opt:has(input:checked) span{background:var(--olive-pale);color:var(--ink)}
+  .af-curr-opt:first-child{border-right:1px solid var(--line)}
+  .line-amt-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:0}
+  .line-usd{font-family:var(--mono);font-size:10px;color:var(--ink-soft);font-weight:400;margin-top:1px;opacity:.75}
+  .acat-bd{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);font-weight:400}
+  .acat-usd{font-family:var(--mono);font-size:10px;color:var(--ink-soft);font-weight:400;opacity:.85}
+  .asum-fx{margin-top:10px;padding-top:8px;border-top:1px dotted var(--line);font-family:var(--mono);font-size:10px;color:var(--ink-soft);letter-spacing:.04em;opacity:.7;text-align:right}
 
   /* Vendor tab: add-forms, delete buttons, empty categories */
   .vform{background:var(--surface);border:1px solid var(--brass);border-radius:12px;padding:14px 14px 12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 14px rgba(184,143,90,.12)}
@@ -563,7 +576,7 @@
   <div class="tabpane" id="pane-actuals">
     <div class="glab" style="margin-top:8px">Actuals</div>
     <div class="psum" id="asum"></div>
-    <div class="note" style="margin-top:0;margin-bottom:12px">Log every expense with amount, category and who paid. Wedding cost splits 50/50 between Brian &amp; Claudia — contributions from anyone else come off the top first.</div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Log each expense in the vendor's currency (€ for Amastuola + Italians, $ for US charges). Totals + split math are always in USD at today's rate. Contributions from others come off the top before the 50/50 split.</div>
     <div id="asummary"></div>
     <div class="addrow"><button class="btn" id="aaddline">+ Add expense</button></div>
     <div id="aform-slot"></div>
@@ -773,6 +786,7 @@ async function saveLineItem(item) {
   const payload = {
     label: item.label,
     amount: Number(item.amount) || 0,
+    currency: item.currency || 'EUR',
     category: item.category || null,
     paid_by: item.paid_by || null,
     paid_by_name: item.paid_by_name || null,
@@ -995,15 +1009,18 @@ function renderHome(){
   // vendor budgets
   const vs=vendorSum();
 
-  // actuals summary
-  const aTotal = lineItems.reduce((s,i)=>s+Number(i.amount||0),0);
-  const aOther = lineItems.filter(i=>i.paid_by==='other').reduce((s,i)=>s+Number(i.amount||0),0);
-  const aBrian = lineItems.filter(i=>i.paid_by==='brian').reduce((s,i)=>s+Number(i.amount||0),0);
-  const aClaudia = lineItems.filter(i=>i.paid_by==='claudia').reduce((s,i)=>s+Number(i.amount||0),0);
+  // actuals summary — always USD (line items converted from native currency)
+  const _fx = _fxRate || 1.05;
+  const _toU = (a,c) => c === 'USD' ? a : a * _fx;
+  const aTotalUsd   = lineItems.reduce((s,i)=>s+_toU(Number(i.amount||0), i.currency), 0);
+  const aOtherUsd   = lineItems.filter(i=>i.paid_by==='other').reduce((s,i)=>s+_toU(Number(i.amount||0), i.currency), 0);
+  const aBrianUsd   = lineItems.filter(i=>i.paid_by==='brian').reduce((s,i)=>s+_toU(Number(i.amount||0), i.currency), 0);
+  const aClaudiaUsd = lineItems.filter(i=>i.paid_by==='claudia').reduce((s,i)=>s+_toU(Number(i.amount||0), i.currency), 0);
+  const _usd = n => (Math.abs(n - Math.round(n)) < 0.005 ? '$' + Math.round(n).toLocaleString('en-US') : '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
 
   const cards=[
     {tab:'budget',label:'Budget',primary:eur(r.total+vs),meta:eur(r.total)+' venue &middot; '+eur(vs)+' outside'},
-    {tab:'actuals',label:'Actuals',primary:eur(aTotal)+' <em>spent</em>',meta:lineItems.length?'B '+eur(aBrian)+' &middot; C '+eur(aClaudia)+(aOther?' &middot; Other '+eur(aOther):''):'log your first expense'},
+    {tab:'actuals',label:'Actuals',primary:_usd(aTotalUsd)+' <em>spent</em>',meta:lineItems.length?'B '+_usd(aBrianUsd)+' &middot; C '+_usd(aClaudiaUsd)+(aOtherUsd?' &middot; Other '+_usd(aOtherUsd):''):'log your first expense'},
     {tab:'guests',label:'Guests',primary:gLikely+' <em>likely</em>',meta:guests.length+' total &middot; '+gMaybe+' maybe &middot; '+gNo+' no'},
     {tab:'rooms',label:'Rooms',primary:gRoom+' / '+roomBeds+' <em>placed</em>',meta:rooms.length+' rooms &middot; '+Math.max(0,roomBeds-gRoom)+' beds open'},
     {tab:'seating',label:'Seating',primary:gSeat+' / '+totalSeats+' <em>seated</em>',meta:dinnerTables.length+' tables &middot; '+Math.max(0,totalSeats-gSeat)+' seats open'},
@@ -1241,6 +1258,7 @@ async function hydrate(){
     if (lir.data) {
       lineItems = lir.data.map(x => ({
         id:x.id, label:x.label, amount:Number(x.amount||0),
+        currency: x.currency || 'EUR',
         category:x.category, paid_by:x.paid_by, paid_by_name:x.paid_by_name,
         spent_on:x.spent_on, notes:x.notes
       }));
@@ -1998,7 +2016,28 @@ document.getElementById('pane-notes').addEventListener('click',e=>{
 });
 
 
-/* ============ ACTUALS ============ */
+/* ============ ACTUALS ============
+   Line items are stored in their native currency (EUR for Italian vendor
+   invoices, USD for US charges). The Actuals tab rolls everything up to USD
+   using the live FX rate for display + settlement math. Vendor sliders on
+   the Budget tab are EUR-native, so category budgets are shown in both. */
+
+function usdFmt(n){
+  if (Math.abs(n - Math.round(n)) < 0.005) return '$' + Math.round(n).toLocaleString('en-US');
+  return '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+function eurNativeFmt(n){
+  if (Math.abs(n - Math.round(n)) < 0.005) return '€' + Math.round(n).toLocaleString('en-US');
+  return '€' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+function fmtNative(amt, currency){
+  return currency === 'USD' ? usdFmt(amt) : eurNativeFmt(amt);
+}
+function toUsd(amt, currency){
+  if (currency === 'USD') return amt;
+  return amt * (_fxRate || 1.05); // fallback if rate not loaded yet
+}
+
 function actualsCategories(){
   return [
     {id:'venue', label:'Venue (Amastuola)'},
@@ -2013,6 +2052,7 @@ function categoryLabel(id){
   return v ? v.label : id;
 }
 function categoryBudget(id){
+  // Always EUR-native (venue is EUR, vendor sliders were designed EUR).
   if (id === 'venue') { try { return compute().total; } catch(_) { return 0; } }
   if (id === 'other' || !id) return 0;
   return (state.vendorBudgets && state.vendorBudgets[id]) || 0;
@@ -2024,14 +2064,16 @@ function paidByLabel(i){
   return '—';
 }
 function actualsSettlement(){
-  const total = lineItems.reduce((s,i) => s + Number(i.amount||0), 0);
-  const otherContrib = lineItems.filter(i => i.paid_by === 'other').reduce((s,i) => s + Number(i.amount||0), 0);
-  const brianPaid = lineItems.filter(i => i.paid_by === 'brian').reduce((s,i) => s + Number(i.amount||0), 0);
-  const claudiaPaid = lineItems.filter(i => i.paid_by === 'claudia').reduce((s,i) => s + Number(i.amount||0), 0);
-  const netCost = Math.max(0, total - otherContrib);
-  const share = netCost / 2;
-  return {total, otherContrib, brianPaid, claudiaPaid, netCost, share,
-          brianDelta: brianPaid - share, claudiaDelta: claudiaPaid - share};
+  // Everything converted to USD for the split math (real dollars out of pocket).
+  const sumUsd = filter => lineItems.filter(filter).reduce((s,i) => s + toUsd(Number(i.amount||0), i.currency), 0);
+  const totalUsd       = sumUsd(() => true);
+  const otherContribUsd= sumUsd(i => i.paid_by === 'other');
+  const brianPaidUsd   = sumUsd(i => i.paid_by === 'brian');
+  const claudiaPaidUsd = sumUsd(i => i.paid_by === 'claudia');
+  const netCost        = Math.max(0, totalUsd - otherContribUsd);
+  const share          = netCost / 2;
+  return {totalUsd, otherContribUsd, brianPaidUsd, claudiaPaidUsd, netCost, share,
+          brianDelta: brianPaidUsd - share, claudiaDelta: claudiaPaidUsd - share};
 }
 
 function renderActuals(){
@@ -2040,44 +2082,47 @@ function renderActuals(){
   if (typeof renderHome === 'function') renderHome();
 
   const s = actualsSettlement();
-  document.getElementById('asum').innerHTML = lineItems.length + ' expense' + (lineItems.length===1?'':'s') + ' &middot; <b>' + eur(s.total) + '</b> spent';
+  document.getElementById('asum').innerHTML = lineItems.length + ' expense' + (lineItems.length===1?'':'s') + ' &middot; <b>' + usdFmt(s.totalUsd) + '</b> spent (USD)';
 
   // status lines
   const statusLine = (delta) => {
     if (Math.abs(delta) < 0.5) return '<span class="even">square</span>';
     return delta > 0
-      ? '<span class="ok">is owed ' + eur(delta) + '</span>'
-      : '<span class="owe">owes ' + eur(-delta) + '</span>';
+      ? '<span class="ok">is owed ' + usdFmt(delta) + '</span>'
+      : '<span class="owe">owes ' + usdFmt(-delta) + '</span>';
   };
 
-  // "Other" contributor breakdown
+  // "Other" contributor breakdown — sum in USD
   const others = {};
   lineItems.filter(i => i.paid_by === 'other').forEach(i => {
     const name = (i.paid_by_name || 'Other').trim() || 'Other';
-    others[name] = (others[name] || 0) + Number(i.amount || 0);
+    others[name] = (others[name] || 0) + toUsd(Number(i.amount||0), i.currency);
   });
   const othersText = Object.keys(others).length
-    ? Object.entries(others).map(([n,a]) => esc(n) + ' ' + eur(a)).join(' &middot; ')
+    ? Object.entries(others).map(([n,a]) => esc(n) + ' ' + usdFmt(a)).join(' &middot; ')
     : '';
+
+  const rateNote = _fxRate ? '1 € = ' + _fxRate.toFixed(3) + ' $' : 'FX rate loading…';
 
   document.getElementById('asummary').innerHTML =
     '<div class="asum-card">' +
-      '<div class="asum-row"><span>Total spent</span><span class="amt">' + eur(s.total) + '</span></div>' +
-      (s.otherContrib > 0 ? '<div class="asum-row credit"><span>Contributions from others</span><span class="amt">−' + eur(s.otherContrib) + '</span></div>' : '') +
-      '<div class="asum-row total"><span>To split 50 / 50</span><span class="amt">' + eur(s.netCost) + '</span></div>' +
+      '<div class="asum-row"><span>Total spent</span><span class="amt">' + usdFmt(s.totalUsd) + '</span></div>' +
+      (s.otherContribUsd > 0 ? '<div class="asum-row credit"><span>Contributions from others</span><span class="amt">−' + usdFmt(s.otherContribUsd) + '</span></div>' : '') +
+      '<div class="asum-row total"><span>To split 50 / 50</span><span class="amt">' + usdFmt(s.netCost) + '</span></div>' +
       '<div class="asum-people">' +
         '<div class="asum-person">' +
           '<div class="asum-name">Brian</div>' +
-          '<div class="asum-nums">share ' + eur(s.share) + ' &middot; paid ' + eur(s.brianPaid) + '</div>' +
+          '<div class="asum-nums">share ' + usdFmt(s.share) + ' &middot; paid ' + usdFmt(s.brianPaidUsd) + '</div>' +
           '<div class="asum-status">' + statusLine(s.brianDelta) + '</div>' +
         '</div>' +
         '<div class="asum-person">' +
           '<div class="asum-name">Claudia</div>' +
-          '<div class="asum-nums">share ' + eur(s.share) + ' &middot; paid ' + eur(s.claudiaPaid) + '</div>' +
+          '<div class="asum-nums">share ' + usdFmt(s.share) + ' &middot; paid ' + usdFmt(s.claudiaPaidUsd) + '</div>' +
           '<div class="asum-status">' + statusLine(s.claudiaDelta) + '</div>' +
         '</div>' +
       '</div>' +
       (othersText ? '<div class="asum-others">Contributed: ' + othersText + '</div>' : '') +
+      '<div class="asum-fx">' + rateNote + ' &middot; EUR items converted at today\'s rate</div>' +
     '</div>';
 
   // Group by category
@@ -2093,27 +2138,47 @@ function renderActuals(){
 
   bookEl.innerHTML = displayCats.filter(c => (byCat[c.id] || []).length > 0 || categoryBudget(c.id) > 0).map(c => {
     const items = byCat[c.id] || [];
-    const actual = items.reduce((sum,i) => sum + Number(i.amount||0), 0);
-    const budget = categoryBudget(c.id);
-    const diff = budget - actual;
-    const overspent = budget > 0 && diff < 0;
+    const eurSpent = items.filter(i => i.currency !== 'USD').reduce((sum,i) => sum + Number(i.amount||0), 0);
+    const usdSpentNative = items.filter(i => i.currency === 'USD').reduce((sum,i) => sum + Number(i.amount||0), 0);
+    const spentUsdTotal = toUsd(eurSpent, 'EUR') + usdSpentNative;
 
-    const itemsHtml = items.map(i =>
-      '<div class="line-row">' +
+    const budgetEur = categoryBudget(c.id); // EUR-native
+    const budgetUsd = toUsd(budgetEur, 'EUR');
+    const diff = budgetUsd - spentUsdTotal;
+    const overspent = budgetEur > 0 && diff < 0;
+
+    // Breakdown suffix: if both currencies present, show them
+    let breakdown = '';
+    if (eurSpent > 0 && usdSpentNative > 0) {
+      breakdown = ' <span class="acat-bd">(' + eurNativeFmt(eurSpent) + ' + ' + usdFmt(usdSpentNative) + ')</span>';
+    } else if (eurSpent > 0) {
+      breakdown = ' <span class="acat-bd">(' + eurNativeFmt(eurSpent) + ')</span>';
+    }
+
+    const itemsHtml = items.map(i => {
+      const native = fmtNative(Number(i.amount||0), i.currency);
+      const usdEquiv = i.currency === 'EUR'
+        ? '<div class="line-usd">≈ ' + usdFmt(toUsd(Number(i.amount||0), 'EUR')) + '</div>'
+        : '';
+      return '<div class="line-row">' +
         '<div class="line-name">' + esc(i.label) + '</div>' +
         '<div class="line-meta">' + esc(paidByLabel(i)) + '</div>' +
-        '<div class="line-amt">' + eur(Number(i.amount||0)) + '</div>' +
+        '<div class="line-amt-wrap"><div class="line-amt">' + native + '</div>' + usdEquiv + '</div>' +
         '<button class="line-del" data-lidel="' + i.id + '" aria-label="Delete">×</button>' +
-      '</div>'
-    ).join('') || '<div class="line-empty">No entries yet</div>';
+      '</div>';
+    }).join('') || '<div class="line-empty">No entries yet</div>';
+
+    const budgetLabel = budgetEur > 0
+      ? 'budget ' + eurNativeFmt(budgetEur) + ' <span class="acat-usd">≈ ' + usdFmt(budgetUsd) + '</span>'
+      : '';
 
     return '<div class="acat">' +
       '<div class="acat-head">' +
         '<div class="acat-name">' + esc(c.label) + '</div>' +
-        '<div class="acat-bud">' + (budget > 0 ? 'budget ' + eur(budget) : '') + '</div>' +
+        '<div class="acat-bud">' + budgetLabel + '</div>' +
       '</div>' +
-      '<div class="acat-actual">Spent <b>' + eur(actual) + '</b>' +
-        (budget > 0 ? ' &middot; ' + (overspent ? '<span class="owe">over by ' + eur(-diff) + '</span>' : '<span class="ok">' + eur(diff) + ' left</span>') : '') +
+      '<div class="acat-actual">Spent <b>' + usdFmt(spentUsdTotal) + '</b>' + breakdown +
+        (budgetEur > 0 ? ' &middot; ' + (overspent ? '<span class="owe">over by ' + usdFmt(-diff) + '</span>' : '<span class="ok">' + usdFmt(diff) + ' left</span>') : '') +
       '</div>' +
       itemsHtml +
       '</div>';
@@ -2126,7 +2191,13 @@ function openAddExpenseForm(){
     '<div class="vform">' +
       '<div class="vform-title">Add expense</div>' +
       '<input id="af-label" placeholder="What was it for?" autocomplete="off">' +
-      '<input id="af-amount" type="number" step="0.01" placeholder="Amount" autocomplete="off">' +
+      '<div class="af-amount-row">' +
+        '<div class="af-curr-picker" role="radiogroup" aria-label="Currency">' +
+          '<label class="af-curr-opt"><input type="radio" name="af-curr" value="EUR" checked><span>€ EUR</span></label>' +
+          '<label class="af-curr-opt"><input type="radio" name="af-curr" value="USD"><span>$ USD</span></label>' +
+        '</div>' +
+        '<input id="af-amount" type="number" step="0.01" placeholder="Amount" autocomplete="off">' +
+      '</div>' +
       '<select id="af-cat">' + catOpts + '</select>' +
       '<div class="af-paidby">' +
         '<label class="af-pb"><input type="radio" name="af-paidby" value="brian"> Brian paid</label>' +
@@ -2146,6 +2217,8 @@ document.getElementById('aform-slot').addEventListener('click', async e => {
   if (e.target.id === 'af-save') {
     const label = document.getElementById('af-label').value.trim();
     const amount = Number(document.getElementById('af-amount').value);
+    const currEl = document.querySelector('input[name="af-curr"]:checked');
+    const currency = currEl ? currEl.value : 'EUR';
     const category = document.getElementById('af-cat').value;
     const paidByEl = document.querySelector('input[name="af-paidby"]:checked');
     const paid_by = paidByEl ? paidByEl.value : null;
@@ -2153,10 +2226,11 @@ document.getElementById('aform-slot').addEventListener('click', async e => {
     if (!label) { alert('Description required'); return; }
     if (!amount || amount <= 0) { alert('Amount required'); return; }
     if (paid_by === 'other' && !paid_by_name) { alert('Name required for "Other" contributors'); return; }
-    const saved = await saveLineItem({label, amount, category, paid_by, paid_by_name});
+    const saved = await saveLineItem({label, amount, currency, category, paid_by, paid_by_name});
     if (saved) {
       lineItems.unshift({
         id: saved.id, label: saved.label, amount: Number(saved.amount||0),
+        currency: saved.currency || 'EUR',
         category: saved.category, paid_by: saved.paid_by, paid_by_name: saved.paid_by_name,
         spent_on: saved.spent_on, notes: saved.notes
       });

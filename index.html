@@ -1229,7 +1229,7 @@ function renderRooms(){
     const occ=guests.filter(g=>g.room===r.id),over=occ.length>r.cap;
     const chips=occ.map(g=>'<span class="occ">'+esc(g.name)+'<button data-act="unassign" data-id="'+g.id+'">\u00d7</button></span>').join('')||'<span class="empty">empty</span>';
     const opts=un.map(g=>'<option value="'+g.id+'">'+esc(g.name)+'</option>').join('');
-    return '<div class="room'+(over?' over':'')+'"><div class="rtop"><input class="rname" data-room="'+r.id+'" value="'+esc(r.name)+'"><div class="cap"><button data-act="cap-dec" data-room="'+r.id+'">\u2212</button><span>'+r.cap+'</span><button data-act="cap-inc" data-room="'+r.id+'">+</button></div><button class="rx" data-act="room-remove" data-room="'+r.id+'">\u00d7</button></div>'+(r.feat?'<div class="rfeat">'+esc(r.feat)+' · sleeps up to '+r.cap+'</div>':'')+'<div class="roccupants">'+chips+'</div><select class="radd" data-room="'+r.id+'"><option value="">+ add guest\u2026</option>'+opts+'</select><div class="rfoot">'+occ.length+' / '+r.cap+(over?' <span class="warn">over max occupancy</span>':'')+'</div></div>';
+    return '<div class="room'+(over?' over':'')+'"><div class="rtop"><input class="rname" data-room="'+r.id+'" value="'+esc(r.name)+'"><div class="cap"><button data-act="cap-dec" data-room="'+r.id+'">\u2212</button><span>'+r.cap+'</span><button data-act="cap-inc" data-room="'+r.id+'">+</button></div></div>'+(r.feat?'<div class="rfeat">'+esc(r.feat)+' · sleeps up to '+r.cap+'</div>':'')+'<div class="roccupants">'+chips+'</div><select class="radd" data-room="'+r.id+'"><option value="">+ add guest\u2026</option>'+opts+'</select><div class="rfoot">'+occ.length+' / '+r.cap+(over?' <span class="warn">over max occupancy</span>':'')+'</div></div>';
   }).join('');
   // unassigned (exclude 'no' RSVPs)
   const unL=guests.filter(g=>g.room==null&&g.status==='likely'),unM=guests.filter(g=>g.room==null&&g.status==='maybe');
@@ -1269,7 +1269,6 @@ document.getElementById('applybtn').addEventListener('click',()=>{const l=guests
 document.getElementById('pane-rooms').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
   if(a==='cap-dec'){const r=rooms.find(x=>x.id===Number(b.dataset.room));if(r){r.cap=Math.max(1,r.cap-1);saveRoom(r);}}
   else if(a==='cap-inc'){const r=rooms.find(x=>x.id===Number(b.dataset.room));if(r){r.cap++;saveRoom(r);}}
-  else if(a==='room-remove'){const rid=Number(b.dataset.room);guests.forEach(g=>{if(g.room===rid){g.room=null;saveGuest(g);}});rooms=rooms.filter(x=>x.id!==rid);deleteRoom(rid);}
   else if(a==='unassign'){const g=guests.find(x=>x.id===Number(b.dataset.id));if(g){g.room=null;saveGuest(g);}}
   else return;
   renderRooms();renderGuests();});

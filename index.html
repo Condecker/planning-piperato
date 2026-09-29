@@ -219,8 +219,8 @@
   .asum-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:14px}
   .asum-row .amt{font-family:var(--mono);font-weight:700}
   .asum-row.credit .amt{color:var(--olive)}
-  .asum-row.total{border-top:1px solid var(--line);padding-top:10px;margin-top:4px;font-family:var(--display);font-weight:600;font-size:16px}
-  .asum-row.total .amt{color:var(--brass);font-family:var(--mono)}
+  .asum-row.asum-total{border-top:1px solid var(--line);padding-top:10px;margin-top:4px;font-family:var(--display);font-weight:600;font-size:16px;background:transparent}
+  .asum-row.asum-total .amt{color:var(--brass);font-family:var(--mono)}
   .asum-people{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
   @media (max-width:420px){.asum-people{grid-template-columns:1fr}}
   .asum-person{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -248,9 +248,9 @@
   .line-del{border:none;background:transparent;color:var(--ink-soft);font-size:16px;cursor:pointer;padding:0 4px;line-height:1}
   .line-del:hover{color:var(--clay)}
   .line-empty{font-family:var(--display);font-style:italic;font-size:13px;color:var(--ink-soft);padding:6px 0}
-  .af-paidby{display:flex;flex-wrap:wrap;gap:12px;font-size:13.5px;padding:6px 2px}
-  .af-pb{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-  .af-pb input{width:auto;padding:0}
+  .af-paidby{display:flex;flex-wrap:wrap;gap:14px;font-size:13.5px;padding:8px 2px 4px}
+  .af-pb{display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+  .af-pb input[type=radio]{width:16px;height:16px;margin:0;padding:0;flex-shrink:0;accent-color:var(--olive)}
   .af-amount-row{display:flex;gap:8px;align-items:stretch}
   .af-amount-row input{flex:1;min-width:0}
   .af-curr-picker{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff;flex-shrink:0}
@@ -2108,7 +2108,7 @@ function renderActuals(){
     '<div class="asum-card">' +
       '<div class="asum-row"><span>Total spent</span><span class="amt">' + usdFmt(s.totalUsd) + '</span></div>' +
       (s.otherContribUsd > 0 ? '<div class="asum-row credit"><span>Contributions from others</span><span class="amt">−' + usdFmt(s.otherContribUsd) + '</span></div>' : '') +
-      '<div class="asum-row total"><span>To split 50 / 50</span><span class="amt">' + usdFmt(s.netCost) + '</span></div>' +
+      '<div class="asum-row asum-total"><span>To split 50 / 50</span><span class="amt">' + usdFmt(s.netCost) + '</span></div>' +
       '<div class="asum-people">' +
         '<div class="asum-person">' +
           '<div class="asum-name">Brian</div>' +

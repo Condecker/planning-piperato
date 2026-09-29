@@ -214,6 +214,44 @@
   .seat.dragging{opacity:.4}
   .seat-empty-cell{background:transparent;border:none;min-height:1px}
 
+  /* Actuals tab */
+  .asum-card{background:linear-gradient(180deg,var(--surface) 0%,#FBF7EE 100%);border:1px solid var(--brass-pale);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+  .asum-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:14px}
+  .asum-row .amt{font-family:var(--mono);font-weight:700}
+  .asum-row.credit .amt{color:var(--olive)}
+  .asum-row.total{border-top:1px solid var(--line);padding-top:10px;margin-top:4px;font-family:var(--display);font-weight:600;font-size:16px}
+  .asum-row.total .amt{color:var(--brass);font-family:var(--mono)}
+  .asum-people{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  @media (max-width:420px){.asum-people{grid-template-columns:1fr}}
+  .asum-person{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .asum-name{font-family:var(--display);font-weight:600;font-size:15px}
+  .asum-nums{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:3px 0 4px;letter-spacing:.02em}
+  .asum-status{font-size:12.5px;font-weight:600}
+  .asum-status .owe{color:var(--clay)}
+  .asum-status .ok{color:var(--olive)}
+  .asum-status .even{color:var(--ink-soft);font-weight:500}
+  .asum-others{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.5}
+  .acat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .acat-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .acat-name{font-family:var(--display);font-weight:600;font-size:15px}
+  .acat-bud{font-family:var(--mono);font-size:11px;color:var(--ink-soft);letter-spacing:.04em}
+  .acat-actual{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin:4px 0 8px;padding-bottom:8px;border-bottom:1px dotted var(--line)}
+  .acat-actual b{color:var(--ink);font-weight:700}
+  .acat-actual .owe{color:var(--clay);font-weight:700}
+  .acat-actual .ok{color:var(--olive);font-weight:700}
+  .line-row{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dotted rgba(46,59,72,.06)}
+  .line-row:last-of-type{border-bottom:none}
+  .line-name{font-size:13.5px;font-weight:500;min-width:0}
+  .line-name .line-notes{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-left:6px}
+  .line-meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);text-align:right;letter-spacing:.04em;white-space:nowrap}
+  .line-amt{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .line-del{border:none;background:transparent;color:var(--ink-soft);font-size:16px;cursor:pointer;padding:0 4px;line-height:1}
+  .line-del:hover{color:var(--clay)}
+  .line-empty{font-family:var(--display);font-style:italic;font-size:13px;color:var(--ink-soft);padding:6px 0}
+  .af-paidby{display:flex;flex-wrap:wrap;gap:12px;font-size:13.5px;padding:6px 2px}
+  .af-pb{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .af-pb input{width:auto;padding:0}
+
   /* Vendor tab: add-forms, delete buttons, empty categories */
   .vform{background:var(--surface);border:1px solid var(--brass);border-radius:12px;padding:14px 14px 12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 14px rgba(184,143,90,.12)}
   .vform-title{font-family:var(--display);font-style:italic;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:2px}
@@ -372,6 +410,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="home">Home</button>
     <button class="tab" data-tab="budget">Budget</button>
+    <button class="tab" data-tab="actuals">Actuals</button>
     <button class="tab" data-tab="guests">Guests</button>
     <button class="tab" data-tab="rooms">Rooms</button>
     <button class="tab" data-tab="seating">Seating</button>
@@ -519,6 +558,16 @@
   <details class="info" style="border-top:none;margin-top:14px"><summary>booking &amp; payment terms</summary><div class="body"><b>&euro;5,000 deposit</b> at booking. <b>Room exclusivity</b> due 1 month before (payable by you or directly by your guests). <b>Reception &amp; events</b> due 2 weeks before. <b>Extras</b> settled at check-out. <b>Final guest numbers</b> due 15 days before. All prices VAT-included. SIAE music licence is mandatory on the wedding day; ceremony chairs are covered by the &euro;10pp ceremony package (wooden cross chairs + welcome flavored waters).</div></details>
 
   <footer id="foot"></footer>
+  </div>
+
+  <div class="tabpane" id="pane-actuals">
+    <div class="glab" style="margin-top:8px">Actuals</div>
+    <div class="psum" id="asum"></div>
+    <div class="note" style="margin-top:0;margin-bottom:12px">Log every expense with amount, category and who paid. Wedding cost splits 50/50 between Brian &amp; Claudia — contributions from anyone else come off the top first.</div>
+    <div id="asummary"></div>
+    <div class="addrow"><button class="btn" id="aaddline">+ Add expense</button></div>
+    <div id="aform-slot"></div>
+    <div id="actualsbook"></div>
   </div>
 
   <div class="tabpane" id="pane-guests">
@@ -720,6 +769,30 @@ async function saveNote(body) {
 function deleteNote(id) {
   db.from('notes').delete().eq('id', id).then(_dbErr('deleteNote'));
 }
+async function saveLineItem(item) {
+  const payload = {
+    label: item.label,
+    amount: Number(item.amount) || 0,
+    category: item.category || null,
+    paid_by: item.paid_by || null,
+    paid_by_name: item.paid_by_name || null,
+    spent_on: item.spent_on || null,
+    notes: item.notes || null
+  };
+  if (item.id) {
+    payload.position = lineItems.indexOf(item);
+    const { error } = await db.from('line_items').update(payload).eq('id', item.id);
+    if (error) console.warn('[db] saveLineItem', error.message);
+    return item;
+  } else {
+    const { data, error } = await db.from('line_items').insert(payload).select().single();
+    if (error) { console.warn('[db] saveLineItem', error.message); return null; }
+    return data;
+  }
+}
+function deleteLineItem(id) {
+  db.from('line_items').delete().eq('id', id).then(_dbErr('deleteLineItem'));
+}
 let _saveSettingsT = null;
 function saveSettings() {
   clearTimeout(_saveSettingsT);
@@ -778,7 +851,21 @@ const A_WELCOME={none:0,pizza:60,buffet:55,bbq:70,welcomedin:65,winedinner:70};c
 let A_ONSITE_BEDS=49; // total on-site beds
 let A_STAYING=48,A_EXTRA_BEDS=12; // staying guests & extra beds in use, synced from the Rooms tab
 let planHook=null; // lets the Plan tab refresh when the budget/date changes
-const VENDORS=[{id:'planner',label:'Wedding planner',max:15000,def:7500},{id:'photo',label:'Photo + video',max:12000,def:6000},{id:'florals',label:'Florals & décor',max:12000,def:5000},{id:'music',label:'Music · DJ or band',max:8000,def:3500},{id:'hmu',label:'Hair & makeup',max:4000,def:1500},{id:'transport',label:'Guest transport',max:6000,def:2000},{id:'other',label:'Attire, rings & buffer',max:15000,def:1000}];
+const VENDORS=[
+  {id:'photo',       label:'Photography',                    max:10000, def:5000},
+  {id:'video',       label:'Videography',                    max:8000,  def:4000},
+  {id:'engagement',  label:'Engagement session photography', max:2500,  def:800},
+  {id:'florist',     label:'Florist',                        max:12000, def:4000},
+  {id:'planner',     label:'Wedding planner',                max:15000, def:7500},
+  {id:'attire-c',    label:'Attire (Claudia)',               max:10000, def:3500},
+  {id:'attire-b',    label:'Attire (Brian)',                 max:3000,  def:1200},
+  {id:'music',       label:'Band and DJ',                    max:10000, def:4000},
+  {id:'transport',   label:'Transportation',                 max:5000,  def:1500},
+  {id:'hmu',         label:'Hair and makeup',                max:4000,  def:1500},
+  {id:'invitations', label:'Invitations',                    max:3000,  def:800},
+  {id:'gifts',       label:'Gifts & favors',                 max:3000,  def:700},
+  {id:'savethedates',label:'Save the dates',                 max:1500,  def:500}
+];
 
 let state={checkin:'2028-06-09',guests:60,menu:'ondarosa',abar:'ck4',ext:'2',welcome:'pizza',brunch:'on',ceremony:'symbolic',olive:'on',contrib:'100',cheese:'off',panzerotto:'off',spritz:'off',rawsea:'off',dessert:'off',icecream:'off',rum:'off',prosecco:'off',fireworks:'off',kids:0,currency:'EUR',customCategories:[],vendorBudgets:Object.fromEntries(VENDORS.map(v=>[v.id,v.def]))};
 
@@ -835,7 +922,7 @@ function compute(){
 }
 
 const vc=document.getElementById('vendors');
-VENDORS.forEach(v=>{const d=document.createElement('div');d.className='vrow';d.innerHTML='<div class="flab"><span>'+v.label+'</span><span class="v" id="lab-'+v.id+'"></span></div><input type="range" id="v-'+v.id+'" min="0" max="'+v.max+'" step="250" value="'+v.def+'">';vc.appendChild(d);});
+VENDORS.forEach(v=>{const d=document.createElement('div');d.className='vrow';d.innerHTML='<div class="flab"><span>'+v.label+'</span><span class="v" id="lab-'+v.id+'"></span></div><input type="range" id="v-'+v.id+'" min="0" max="'+v.max+'" step="100" value="'+v.def+'">';vc.appendChild(d);});
 function vendorSum(){return VENDORS.reduce((s,v)=>s+Number(document.getElementById('v-'+v.id).value),0);}
 
 function render(){
@@ -908,8 +995,15 @@ function renderHome(){
   // vendor budgets
   const vs=vendorSum();
 
+  // actuals summary
+  const aTotal = lineItems.reduce((s,i)=>s+Number(i.amount||0),0);
+  const aOther = lineItems.filter(i=>i.paid_by==='other').reduce((s,i)=>s+Number(i.amount||0),0);
+  const aBrian = lineItems.filter(i=>i.paid_by==='brian').reduce((s,i)=>s+Number(i.amount||0),0);
+  const aClaudia = lineItems.filter(i=>i.paid_by==='claudia').reduce((s,i)=>s+Number(i.amount||0),0);
+
   const cards=[
     {tab:'budget',label:'Budget',primary:eur(r.total+vs),meta:eur(r.total)+' venue &middot; '+eur(vs)+' outside'},
+    {tab:'actuals',label:'Actuals',primary:eur(aTotal)+' <em>spent</em>',meta:lineItems.length?'B '+eur(aBrian)+' &middot; C '+eur(aClaudia)+(aOther?' &middot; Other '+eur(aOther):''):'log your first expense'},
     {tab:'guests',label:'Guests',primary:gLikely+' <em>likely</em>',meta:guests.length+' total &middot; '+gMaybe+' maybe &middot; '+gNo+' no'},
     {tab:'rooms',label:'Rooms',primary:gRoom+' / '+roomBeds+' <em>placed</em>',meta:rooms.length+' rooms &middot; '+Math.max(0,roomBeds-gRoom)+' beds open'},
     {tab:'seating',label:'Seating',primary:gSeat+' / '+totalSeats+' <em>seated</em>',meta:dinnerTables.length+' tables &middot; '+Math.max(0,totalSeats-gSeat)+' seats open'},
@@ -986,7 +1080,7 @@ function syncSlidersFromState(){if(!state.vendorBudgets)return;VENDORS.forEach(v
 render();
 
 /* ============ TABS ============ */
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['home','budget','guests','rooms','seating','vendors','plan','travel','notes'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{const v=t.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));['home','budget','actuals','guests','rooms','seating','vendors','plan','travel','notes'].forEach(pp=>document.getElementById('pane-'+pp).classList.toggle('show',pp===v));}));
 
 /* ============ PLANNER: guests + rooms ============ */
 function esc(x){return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -1073,6 +1167,7 @@ let guests=buildGuests();
 let rooms=buildRooms();
 let dinnerTables=[];
 let notes=[];
+let lineItems=[];
 let _me=null;
 
 /* Left as a no-op: mutation sites now call the per-entity save*() helpers
@@ -1080,7 +1175,7 @@ let _me=null;
 function persist(){}
 async function hydrate(){
   try {
-    const [gr, rr, vr, tr, td, ti, pr, sr, nr, dtr] = await Promise.all([
+    const [gr, rr, vr, tr, td, ti, pr, sr, nr, dtr, lir] = await Promise.all([
       db.from('guests').select('*').order('position'),
       db.from('rooms').select('*').order('position'),
       db.from('vendors').select('*'),
@@ -1090,7 +1185,8 @@ async function hydrate(){
       db.from('payments').select('*'),
       db.from('settings').select('*').eq('id',1).maybeSingle(),
       db.from('notes').select('*').order('created_at', {ascending:false}),
-      db.from('dinner_tables').select('*').order('position')
+      db.from('dinner_tables').select('*').order('position'),
+      db.from('line_items').select('*').order('created_at', {ascending:false})
     ]);
     if (rr.data && rr.data.length) {
       rooms = rr.data.map(r => ({id:r.id, name:r.name, cap:r.cap, cat:r.category, feat:r.features}));
@@ -1142,6 +1238,13 @@ async function hydrate(){
         author_email:n.author_email, created_at:n.created_at
       }));
     }
+    if (lir.data) {
+      lineItems = lir.data.map(x => ({
+        id:x.id, label:x.label, amount:Number(x.amount||0),
+        category:x.category, paid_by:x.paid_by, paid_by_name:x.paid_by_name,
+        spent_on:x.spent_on, notes:x.notes
+      }));
+    }
   } catch (e) {
     console.warn('[db] hydrate error — keeping in-memory defaults', e);
   }
@@ -1154,6 +1257,7 @@ async function hydrate(){
   renderVendors();
   renderPlan();
   renderNotes();
+  renderActuals();
 }
 
 /* Realtime: any change to a subscribed table triggers a full re-hydrate.
@@ -1161,7 +1265,7 @@ async function hydrate(){
 let _channels = [];
 function subscribeRealtime() {
   unsubscribeRealtime();
-  ['guests','rooms','vendors','tasks','timeline_days','timeline_items','payments','settings','notes','dinner_tables'].forEach(t => {
+  ['guests','rooms','vendors','tasks','timeline_days','timeline_items','payments','settings','notes','dinner_tables','line_items'].forEach(t => {
     const ch = db.channel('rt-'+t)
       .on('postgres_changes', {event:'*', schema:'public', table:t}, () => hydrate())
       .subscribe();
@@ -1892,6 +1996,199 @@ document.getElementById('pane-notes').addEventListener('click',e=>{
   deleteNote(id);
   renderNotes();
 });
+
+
+/* ============ ACTUALS ============ */
+function actualsCategories(){
+  return [
+    {id:'venue', label:'Venue (Amastuola)'},
+    ...VENDORS.map(v => ({id:v.id, label:v.label})),
+    {id:'other', label:'Other / Uncategorized'}
+  ];
+}
+function categoryLabel(id){
+  if (id === 'venue') return 'Venue (Amastuola)';
+  if (id === 'other' || !id) return 'Other';
+  const v = VENDORS.find(x => x.id === id);
+  return v ? v.label : id;
+}
+function categoryBudget(id){
+  if (id === 'venue') { try { return compute().total; } catch(_) { return 0; } }
+  if (id === 'other' || !id) return 0;
+  return (state.vendorBudgets && state.vendorBudgets[id]) || 0;
+}
+function paidByLabel(i){
+  if (i.paid_by === 'brian') return 'Brian';
+  if (i.paid_by === 'claudia') return 'Claudia';
+  if (i.paid_by === 'other') return i.paid_by_name || 'Other';
+  return '—';
+}
+function actualsSettlement(){
+  const total = lineItems.reduce((s,i) => s + Number(i.amount||0), 0);
+  const otherContrib = lineItems.filter(i => i.paid_by === 'other').reduce((s,i) => s + Number(i.amount||0), 0);
+  const brianPaid = lineItems.filter(i => i.paid_by === 'brian').reduce((s,i) => s + Number(i.amount||0), 0);
+  const claudiaPaid = lineItems.filter(i => i.paid_by === 'claudia').reduce((s,i) => s + Number(i.amount||0), 0);
+  const netCost = Math.max(0, total - otherContrib);
+  const share = netCost / 2;
+  return {total, otherContrib, brianPaid, claudiaPaid, netCost, share,
+          brianDelta: brianPaid - share, claudiaDelta: claudiaPaid - share};
+}
+
+function renderActuals(){
+  const bookEl = document.getElementById('actualsbook');
+  if (!bookEl) return;
+  if (typeof renderHome === 'function') renderHome();
+
+  const s = actualsSettlement();
+  document.getElementById('asum').innerHTML = lineItems.length + ' expense' + (lineItems.length===1?'':'s') + ' &middot; <b>' + eur(s.total) + '</b> spent';
+
+  // status lines
+  const statusLine = (delta) => {
+    if (Math.abs(delta) < 0.5) return '<span class="even">square</span>';
+    return delta > 0
+      ? '<span class="ok">is owed ' + eur(delta) + '</span>'
+      : '<span class="owe">owes ' + eur(-delta) + '</span>';
+  };
+
+  // "Other" contributor breakdown
+  const others = {};
+  lineItems.filter(i => i.paid_by === 'other').forEach(i => {
+    const name = (i.paid_by_name || 'Other').trim() || 'Other';
+    others[name] = (others[name] || 0) + Number(i.amount || 0);
+  });
+  const othersText = Object.keys(others).length
+    ? Object.entries(others).map(([n,a]) => esc(n) + ' ' + eur(a)).join(' &middot; ')
+    : '';
+
+  document.getElementById('asummary').innerHTML =
+    '<div class="asum-card">' +
+      '<div class="asum-row"><span>Total spent</span><span class="amt">' + eur(s.total) + '</span></div>' +
+      (s.otherContrib > 0 ? '<div class="asum-row credit"><span>Contributions from others</span><span class="amt">−' + eur(s.otherContrib) + '</span></div>' : '') +
+      '<div class="asum-row total"><span>To split 50 / 50</span><span class="amt">' + eur(s.netCost) + '</span></div>' +
+      '<div class="asum-people">' +
+        '<div class="asum-person">' +
+          '<div class="asum-name">Brian</div>' +
+          '<div class="asum-nums">share ' + eur(s.share) + ' &middot; paid ' + eur(s.brianPaid) + '</div>' +
+          '<div class="asum-status">' + statusLine(s.brianDelta) + '</div>' +
+        '</div>' +
+        '<div class="asum-person">' +
+          '<div class="asum-name">Claudia</div>' +
+          '<div class="asum-nums">share ' + eur(s.share) + ' &middot; paid ' + eur(s.claudiaPaid) + '</div>' +
+          '<div class="asum-status">' + statusLine(s.claudiaDelta) + '</div>' +
+        '</div>' +
+      '</div>' +
+      (othersText ? '<div class="asum-others">Contributed: ' + othersText + '</div>' : '') +
+    '</div>';
+
+  // Group by category
+  const byCat = {};
+  lineItems.forEach(i => {
+    const cat = i.category || 'other';
+    (byCat[cat] = byCat[cat] || []).push(i);
+  });
+  const catsInOrder = actualsCategories();
+  const knownIds = new Set(catsInOrder.map(c => c.id));
+  const orphanCats = Object.keys(byCat).filter(k => !knownIds.has(k));
+  const displayCats = [...catsInOrder, ...orphanCats.map(k => ({id:k, label:k}))];
+
+  bookEl.innerHTML = displayCats.filter(c => (byCat[c.id] || []).length > 0 || categoryBudget(c.id) > 0).map(c => {
+    const items = byCat[c.id] || [];
+    const actual = items.reduce((sum,i) => sum + Number(i.amount||0), 0);
+    const budget = categoryBudget(c.id);
+    const diff = budget - actual;
+    const overspent = budget > 0 && diff < 0;
+
+    const itemsHtml = items.map(i =>
+      '<div class="line-row">' +
+        '<div class="line-name">' + esc(i.label) + '</div>' +
+        '<div class="line-meta">' + esc(paidByLabel(i)) + '</div>' +
+        '<div class="line-amt">' + eur(Number(i.amount||0)) + '</div>' +
+        '<button class="line-del" data-lidel="' + i.id + '" aria-label="Delete">×</button>' +
+      '</div>'
+    ).join('') || '<div class="line-empty">No entries yet</div>';
+
+    return '<div class="acat">' +
+      '<div class="acat-head">' +
+        '<div class="acat-name">' + esc(c.label) + '</div>' +
+        '<div class="acat-bud">' + (budget > 0 ? 'budget ' + eur(budget) : '') + '</div>' +
+      '</div>' +
+      '<div class="acat-actual">Spent <b>' + eur(actual) + '</b>' +
+        (budget > 0 ? ' &middot; ' + (overspent ? '<span class="owe">over by ' + eur(-diff) + '</span>' : '<span class="ok">' + eur(diff) + ' left</span>') : '') +
+      '</div>' +
+      itemsHtml +
+      '</div>';
+  }).join('') || '<div class="line-empty" style="text-align:center;padding:20px">No expenses logged yet. Use + Add expense to start.</div>';
+}
+
+function openAddExpenseForm(){
+  const catOpts = actualsCategories().map(c => '<option value="' + esc(c.id) + '">' + esc(c.label) + '</option>').join('');
+  document.getElementById('aform-slot').innerHTML =
+    '<div class="vform">' +
+      '<div class="vform-title">Add expense</div>' +
+      '<input id="af-label" placeholder="What was it for?" autocomplete="off">' +
+      '<input id="af-amount" type="number" step="0.01" placeholder="Amount" autocomplete="off">' +
+      '<select id="af-cat">' + catOpts + '</select>' +
+      '<div class="af-paidby">' +
+        '<label class="af-pb"><input type="radio" name="af-paidby" value="brian"> Brian paid</label>' +
+        '<label class="af-pb"><input type="radio" name="af-paidby" value="claudia"> Claudia paid</label>' +
+        '<label class="af-pb"><input type="radio" name="af-paidby" value="other"> Other</label>' +
+      '</div>' +
+      '<input id="af-othername" placeholder="Contributor name" style="display:none" autocomplete="off">' +
+      '<div class="vform-actions"><button class="btn" id="af-save">Save expense</button><button class="btn ghost" id="af-cancel">Cancel</button></div>' +
+    '</div>';
+  setTimeout(() => document.getElementById('af-label').focus(), 50);
+}
+
+document.getElementById('aaddline').addEventListener('click', openAddExpenseForm);
+
+document.getElementById('aform-slot').addEventListener('click', async e => {
+  if (e.target.id === 'af-cancel') { document.getElementById('aform-slot').innerHTML = ''; return; }
+  if (e.target.id === 'af-save') {
+    const label = document.getElementById('af-label').value.trim();
+    const amount = Number(document.getElementById('af-amount').value);
+    const category = document.getElementById('af-cat').value;
+    const paidByEl = document.querySelector('input[name="af-paidby"]:checked');
+    const paid_by = paidByEl ? paidByEl.value : null;
+    const paid_by_name = document.getElementById('af-othername').value.trim() || null;
+    if (!label) { alert('Description required'); return; }
+    if (!amount || amount <= 0) { alert('Amount required'); return; }
+    if (paid_by === 'other' && !paid_by_name) { alert('Name required for "Other" contributors'); return; }
+    const saved = await saveLineItem({label, amount, category, paid_by, paid_by_name});
+    if (saved) {
+      lineItems.unshift({
+        id: saved.id, label: saved.label, amount: Number(saved.amount||0),
+        category: saved.category, paid_by: saved.paid_by, paid_by_name: saved.paid_by_name,
+        spent_on: saved.spent_on, notes: saved.notes
+      });
+      document.getElementById('aform-slot').innerHTML = '';
+      renderActuals();
+    }
+  }
+});
+document.getElementById('aform-slot').addEventListener('change', e => {
+  if (e.target.name === 'af-paidby') {
+    const on = document.getElementById('af-othername');
+    on.style.display = e.target.value === 'other' ? 'block' : 'none';
+    if (e.target.value === 'other') setTimeout(() => on.focus(), 30);
+  }
+});
+document.getElementById('aform-slot').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.target.id === 'af-label' || e.target.id === 'af-amount' || e.target.id === 'af-othername')) {
+    e.preventDefault();
+    document.getElementById('af-save').click();
+  }
+});
+document.getElementById('pane-actuals').addEventListener('click', e => {
+  const del = e.target.closest('[data-lidel]');
+  if (del) {
+    const id = Number(del.dataset.lidel);
+    lineItems = lineItems.filter(i => i.id !== id);
+    deleteLineItem(id);
+    renderActuals();
+  }
+});
+
+
 document.getElementById('pane-plan').addEventListener('click',e=>{
   const cb=e.target.closest('[data-ck]');if(cb){const id=Number(cb.dataset.id),t=tasks.find(x=>x.id===id);
     if(cb.dataset.ck==='toggle'&&t){t.done=!t.done;saveTask(t);}
@@ -1912,7 +2209,7 @@ document.getElementById('pane-plan').addEventListener('change',e=>{
   else if(a==='time'||a==='act'){const idx=Number(tb.dataset.i),item=day.items[idx];if(item&&item.row_id!=null)saveTimelineItem(item,day.day_id??di,idx);}
 });
 
-renderGuests();renderRooms();renderSeating();renderVendors();renderPlan();renderNotes();
+renderGuests();renderRooms();renderSeating();renderVendors();renderPlan();renderNotes();renderActuals();
 updateFxLabel();
 loadFxRate().then(()=>{ if(state.currency==='USD'){render();renderRooms();renderPlan();} });
 initAuth();

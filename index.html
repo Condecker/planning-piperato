@@ -269,6 +269,43 @@
   .af-solo{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);cursor:pointer;padding:4px 2px 6px}
   .af-solo input[type=checkbox]{width:16px;height:16px;margin:0;padding:0;flex-shrink:0;accent-color:var(--sky)}
 
+  /* Guest search + filter chips */
+  .gsearch{width:100%;font-family:var(--body);font-size:14px;padding:10px 13px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);margin-bottom:8px}
+  .gsearch:focus{outline:1px solid var(--brass);border-color:var(--brass)}
+  .gfilters{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+  .gchip{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);cursor:pointer;transition:all .15s ease}
+  .gchip:hover{border-color:var(--brass);color:var(--ink)}
+  .gchip.active{background:var(--sky-pale);color:var(--sky);border-color:var(--sky)}
+  .gsum-pipeline{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);letter-spacing:.04em}
+  .gsum-pipeline b{color:var(--sky);font-weight:700}
+
+  /* Guest dietary + pipeline rows */
+  .gdiet{display:flex;gap:6px;margin-top:8px;align-items:stretch}
+  .gdietsel{flex:0 0 auto;font-family:var(--body);font-size:12.5px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);max-width:130px}
+  .gallergy{flex:1;min-width:0;font-family:var(--body);font-size:12.5px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  .gallergy:focus,.gdietsel:focus{outline:1px solid var(--brass)}
+  .gpipeline{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;padding-top:8px;border-top:1px dotted rgba(46,59,72,.08)}
+  .gpipe{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;color:var(--ink-soft);cursor:pointer;text-transform:uppercase;white-space:nowrap}
+  .gpipe input[type=checkbox]{width:14px;height:14px;margin:0;padding:0;flex-shrink:0;accent-color:var(--sky)}
+  .gpipe input:checked + span{color:var(--sky)}
+
+  /* Vendor payment schedule */
+  .vpay{margin-top:10px;padding-top:8px;border-top:1px dotted rgba(46,59,72,.1)}
+  .vpay summary{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);cursor:pointer;padding:2px 0;list-style:none;display:flex;align-items:center;gap:6px}
+  .vpay summary::-webkit-details-marker{display:none}
+  .vpay summary::before{content:"+";font-weight:700;font-size:13px}
+  .vpay[open] summary::before{content:"−"}
+  .vpay-row{display:grid;grid-template-columns:auto auto 1fr auto;gap:6px;align-items:center;padding:6px 0;font-size:12.5px}
+  .vpay-row.paid{opacity:.55}
+  .vpay-check input[type=checkbox]{width:16px;height:16px;margin:0;padding:0;accent-color:var(--olive)}
+  .vpay-label{font-family:var(--body);font-weight:600;font-size:12.5px;min-width:56px}
+  .vpay-amt-wrap{display:flex;gap:4px;min-width:0}
+  .vpay-curr{font-family:var(--mono);font-size:12px;padding:5px 4px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);width:36px;text-align:center;-webkit-appearance:none;appearance:none;background-image:none;padding-right:4px}
+  .vpay-amt{flex:1;min-width:0;font-family:var(--mono);font-size:12px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+  .vpay-due{font-family:var(--mono);font-size:11px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);max-width:130px}
+  .vpay-amt:focus,.vpay-due:focus,.vpay-curr:focus{outline:1px solid var(--brass)}
+  @media (max-width:420px){.vpay-row{grid-template-columns:auto 1fr auto;gap:5px}.vpay-row .vpay-label{grid-column:1/-1;padding-left:24px}.vpay-check{grid-row:2}.vpay-amt-wrap{grid-row:2}.vpay-due{grid-row:2}}
+
   /* Vendor tab: add-forms, delete buttons, empty categories */
   .vform{background:var(--surface);border:1px solid var(--brass);border-radius:12px;padding:14px 14px 12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 14px rgba(184,143,90,.12)}
   .vform-title{font-family:var(--display);font-style:italic;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:2px}
@@ -592,6 +629,16 @@
     <div class="psum" id="gsum"></div>
     <button class="applybtn" id="applybtn">Use likely count in budget &rarr;</button>
     <div class="addrow"><input id="newguest" placeholder="Add a guest…"><button id="addguest">Add</button><button class="btn ghost" id="dlcsv" title="Download the guest list as CSV">CSV</button></div>
+    <input id="gsearch" class="gsearch" placeholder="Search guests…" autocomplete="off">
+    <div class="gfilters" id="gfilters">
+      <button class="gchip active" data-gfilter="all">All</button>
+      <button class="gchip" data-gfilter="likely">Likely</button>
+      <button class="gchip" data-gfilter="maybe">Maybe</button>
+      <button class="gchip" data-gfilter="family">Family</button>
+      <button class="gchip" data-gfilter="bridal">Bridal</button>
+      <button class="gchip" data-gfilter="unroomed">Unroomed</button>
+      <button class="gchip" data-gfilter="missing-rsvp">Missing RSVP</button>
+    </div>
     <div id="guestlist"></div>
     <div class="note" style="margin-top:10px">Tap a name to rename. Room numbers come from the Rooms tab. Everything here saves automatically.</div>
   </div>
@@ -710,6 +757,8 @@ function saveGuest(g) {
     room_id: g.room ?? null,
     dinner_table: g.dinnerTable ?? null, dinner_seat: g.dinnerSeat ?? null,
     email: g.email ?? null, note: g.note ?? null,
+    dietary: g.dietary || 'none', dietary_notes: g.dietary_notes || null,
+    std_sent: !!g.std_sent, invite_sent: !!g.invite_sent, rsvp_received: !!g.rsvp_received,
     position: guests.indexOf(g)
   }).then(_dbErr('saveGuest'));
 }
@@ -737,7 +786,15 @@ function deleteDinnerTable(id) {
 function saveVendor(v) {
   db.from('vendors').upsert({
     id: v.id, category: v.category ?? null, name: v.name ?? null, contact: v.contact ?? null,
-    status: v.status || '', notes: v.notes || ''
+    status: v.status || '', notes: v.notes || '',
+    deposit_amount: v.deposit_amount ?? null,
+    deposit_currency: v.deposit_currency || 'EUR',
+    deposit_due: v.deposit_due || null,
+    deposit_paid: !!v.deposit_paid,
+    balance_amount: v.balance_amount ?? null,
+    balance_currency: v.balance_currency || 'EUR',
+    balance_due: v.balance_due || null,
+    balance_paid: !!v.balance_paid
   }).then(_dbErr('saveVendor'));
 }
 function deleteVendor(id) {
@@ -1026,7 +1083,7 @@ function renderHome(){
   const cards=[
     {tab:'budget',label:'Budget',primary:eur(r.total+vs),meta:eur(r.total)+' venue &middot; '+eur(vs)+' outside'},
     {tab:'actuals',label:'Actuals',primary:_usd(aTotalUsd)+' <em>spent</em>',meta:lineItems.length?'B '+_usd(aBrianUsd)+' &middot; C '+_usd(aClaudiaUsd)+(aOtherUsd?' &middot; Other '+_usd(aOtherUsd):''):'log your first expense'},
-    {tab:'guests',label:'Guests',primary:gLikely+' <em>likely</em>',meta:guests.length+' total &middot; '+gMaybe+' maybe &middot; '+gNo+' no'},
+    {tab:'guests',label:'Guests',primary:gLikely+' <em>likely</em>',meta:guests.length+' total &middot; '+guests.filter(g=>g.rsvp_received).length+' RSVPs in &middot; '+guests.filter(g=>g.invite_sent).length+' invites sent'},
     {tab:'rooms',label:'Rooms',primary:gRoom+' / '+roomBeds+' <em>placed</em>',meta:rooms.length+' rooms &middot; '+Math.max(0,roomBeds-gRoom)+' beds open'},
     {tab:'seating',label:'Seating',primary:gSeat+' / '+totalSeats+' <em>seated</em>',meta:dinnerTables.length+' tables &middot; '+Math.max(0,totalSeats-gSeat)+' seats open'},
     {tab:'vendors',label:'Vendors',primary:vBook+' / '+vTot+' <em>booked</em>',meta:'across '+new Set(vendorsCatalog.map(v=>v.category)).size+' categories'},
@@ -1068,10 +1125,10 @@ function renderCountdown(){
   el.innerHTML='<span class="cd-num">'+num+'</span><span class="cd-label">'+label+'</span><span class="cd-date">· '+dateStr+'</span>';
 }
 function downloadGuestCSV(){
-  const rows=[['id','name','status','family','bridal','room','email','note']];
+  const rows=[['id','name','status','family','bridal','room','email','note','dietary','dietary_notes','std_sent','invite_sent','rsvp_received']];
   guests.forEach(g=>{
     const rn=g.room!=null?(rooms.find(r=>r.id===g.room)||{}).name||'':'';
-    rows.push([g.id,g.name,g.status,g.family?'yes':'no',g.bridal?'yes':'no',rn,g.email||'',g.note||'']);
+    rows.push([g.id,g.name,g.status,g.family?'yes':'no',g.bridal?'yes':'no',rn,g.email||'',g.note||'',g.dietary||'none',g.dietary_notes||'',g.std_sent?'yes':'no',g.invite_sent?'yes':'no',g.rsvp_received?'yes':'no']);
   });
   const esc=c=>{const s=String(c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
@@ -1219,7 +1276,12 @@ async function hydrate(){
         family:!!g.family, bridal:!!g.bridal,
         room:g.room_id,
         dinnerTable:g.dinner_table, dinnerSeat:g.dinner_seat,
-        email:g.email, note:g.note
+        email:g.email, note:g.note,
+        dietary: g.dietary || 'none',
+        dietary_notes: g.dietary_notes || '',
+        std_sent: !!g.std_sent,
+        invite_sent: !!g.invite_sent,
+        rsvp_received: !!g.rsvp_received
       }));
     }
     if (dtr.data && dtr.data.length) {
@@ -1229,7 +1291,15 @@ async function hydrate(){
       vendorsCatalog = vr.data.map(v => ({
         id: v.id, category: v.category || 'Uncategorized',
         name: v.name || '', contact: v.contact || '',
-        status: v.status || '', notes: v.notes || ''
+        status: v.status || '', notes: v.notes || '',
+        deposit_amount: v.deposit_amount != null ? Number(v.deposit_amount) : null,
+        deposit_currency: v.deposit_currency || 'EUR',
+        deposit_due: v.deposit_due || '',
+        deposit_paid: !!v.deposit_paid,
+        balance_amount: v.balance_amount != null ? Number(v.balance_amount) : null,
+        balance_currency: v.balance_currency || 'EUR',
+        balance_due: v.balance_due || '',
+        balance_paid: !!v.balance_paid
       }));
     }
     if (tr.data && tr.data.length) {
@@ -1339,12 +1409,77 @@ document.getElementById('signout').addEventListener('click', async () => {
 function renderGuests(){
   const c=s=>guests.filter(g=>g.status===s).length;
   const fam=guests.filter(g=>g.family).length,bri=guests.filter(g=>g.bridal).length,roomed=guests.filter(g=>g.room!=null).length;
-  document.getElementById('gsum').innerHTML=guests.length+' guests &middot; <b>'+c('likely')+'</b> likely &middot; '+c('maybe')+' maybe &middot; '+c('no')+' no &middot; '+fam+' family &middot; '+bri+' bridal &middot; '+roomed+' roomed';
+  const stdCount=guests.filter(g=>g.std_sent).length;
+  const inviteCount=guests.filter(g=>g.invite_sent).length;
+  const rsvpCount=guests.filter(g=>g.rsvp_received).length;
+  document.getElementById('gsum').innerHTML=
+    guests.length+' guests \u00b7 <b>'+c('likely')+'</b> likely \u00b7 '+c('maybe')+' maybe \u00b7 '+c('no')+' no \u00b7 '+fam+' family \u00b7 '+bri+' bridal \u00b7 '+roomed+' roomed<br>' +
+    '<span class="gsum-pipeline">'+stdCount+' STD sent \u00b7 '+inviteCount+' invites sent \u00b7 <b>'+rsvpCount+'</b> RSVPs in</span>';
   document.getElementById('applybtn').textContent='Use '+c('likely')+' likely in budget \u2192';
-  document.getElementById('guestlist').innerHTML=guests.map(g=>{
-    const r=g.room!=null?(rooms.find(x=>x.id===g.room)||{}).name:null;
-    return '<div class="guest"><div class="gtop"><span class="gnum">'+g.id+'</span><input class="gname" data-id="'+g.id+'" value="'+esc(g.name)+'"><span class="grm'+(r?' has':'')+'">'+(r?esc(r):'\u2014')+'</span><button class="gx" data-act="remove" data-id="'+g.id+'">\u00d7</button></div><div class="gtags"><div class="statuswrap"><button class="mini'+(g.status==='likely'?' on-yes':'')+'" data-act="status" data-id="'+g.id+'" data-val="likely">Likely</button><button class="mini'+(g.status==='maybe'?' on-maybe':'')+'" data-act="status" data-id="'+g.id+'" data-val="maybe">Maybe</button><button class="mini'+(g.status==='no'?' on-no':'')+'" data-act="status" data-id="'+g.id+'" data-val="no">No</button></div><button class="mini tag'+(g.family?' on':'')+'" data-act="family" data-id="'+g.id+'">Family</button><button class="mini tag'+(g.bridal?' on':'')+'" data-act="bridal" data-id="'+g.id+'">Bridal</button></div><div class="gextra"><input class="gemail" data-id="'+g.id+'" placeholder="email" value="'+esc(g.email||'')+'"><input class="gnote" data-id="'+g.id+'" placeholder="notes (dietary, +1…)" value="'+esc(g.note||'')+'"></div></div>';
+
+  const visible = applyGuestFilter(guests);
+  const list = document.getElementById('guestlist');
+  if (!visible.length){
+    list.innerHTML='<div class="line-empty" style="text-align:center;padding:20px">No guests match this filter.</div>';
+    renderHome();
+    return;
+  }
+
+  const dietOpts = ['none','vegetarian','vegan','gluten-free','pescatarian','other'];
+
+  list.innerHTML = visible.map(g=>{
+    const r = g.room!=null ? (rooms.find(x=>x.id===g.room)||{}).name : null;
+    const dietSel = dietOpts.map(d => '<option value="'+d+'"'+(g.dietary===d?' selected':'')+'>'+d+'</option>').join('');
+    return '<div class="guest">' +
+      '<div class="gtop">'+
+        '<span class="gnum">'+g.id+'</span>'+
+        '<input class="gname" data-id="'+g.id+'" value="'+esc(g.name)+'">'+
+        '<span class="grm'+(r?' has':'')+'">'+(r?esc(r):'\u2014')+'</span>'+
+        '<button class="gx" data-act="remove" data-id="'+g.id+'">\u00d7</button>'+
+      '</div>'+
+      '<div class="gtags">'+
+        '<div class="statuswrap">'+
+          '<button class="mini'+(g.status==='likely'?' on-yes':'')+'" data-act="status" data-id="'+g.id+'" data-val="likely">Likely</button>'+
+          '<button class="mini'+(g.status==='maybe'?' on-maybe':'')+'" data-act="status" data-id="'+g.id+'" data-val="maybe">Maybe</button>'+
+          '<button class="mini'+(g.status==='no'?' on-no':'')+'" data-act="status" data-id="'+g.id+'" data-val="no">No</button>'+
+        '</div>'+
+        '<button class="mini tag'+(g.family?' on':'')+'" data-act="family" data-id="'+g.id+'">Family</button>'+
+        '<button class="mini tag'+(g.bridal?' on':'')+'" data-act="bridal" data-id="'+g.id+'">Bridal</button>'+
+      '</div>'+
+      '<div class="gextra">'+
+        '<input class="gemail" data-id="'+g.id+'" placeholder="email" value="'+esc(g.email||'')+'">'+
+        '<input class="gnote" data-id="'+g.id+'" placeholder="notes (+1, kids, misc)" value="'+esc(g.note||'')+'">'+
+      '</div>'+
+      '<div class="gdiet">'+
+        '<select class="gdietsel" data-id="'+g.id+'">'+dietSel+'</select>'+
+        '<input class="gallergy" data-id="'+g.id+'" placeholder="allergies / dietary notes" value="'+esc(g.dietary_notes||'')+'">'+
+      '</div>'+
+      '<div class="gpipeline">'+
+        '<label class="gpipe"><input type="checkbox" class="gcheck" data-pipe="std_sent" data-id="'+g.id+'"'+(g.std_sent?' checked':'')+'><span>STD sent</span></label>'+
+        '<label class="gpipe"><input type="checkbox" class="gcheck" data-pipe="invite_sent" data-id="'+g.id+'"'+(g.invite_sent?' checked':'')+'><span>Invite sent</span></label>'+
+        '<label class="gpipe"><input type="checkbox" class="gcheck" data-pipe="rsvp_received" data-id="'+g.id+'"'+(g.rsvp_received?' checked':'')+'><span>RSVP in</span></label>'+
+      '</div>'+
+    '</div>';
   }).join('');
+  renderHome();
+}
+
+let _guestFilter = 'all';
+let _guestSearch = '';
+function applyGuestFilter(list){
+  const q = _guestSearch.trim().toLowerCase();
+  return list.filter(g => {
+    if (q && !g.name.toLowerCase().includes(q) && !(g.email||'').toLowerCase().includes(q)) return false;
+    switch(_guestFilter){
+      case 'likely':       return g.status === 'likely';
+      case 'maybe':        return g.status === 'maybe';
+      case 'family':       return g.family;
+      case 'bridal':       return g.bridal;
+      case 'unroomed':     return g.room == null && g.status !== 'no';
+      case 'missing-rsvp': return !g.rsvp_received && g.status !== 'no';
+      default:             return true;
+    }
+  });
 }
 function syncBeds(){A_ONSITE_BEDS=rooms.reduce((s,r)=>s+r.cap,0);A_STAYING=guests.filter(g=>g.room!=null).length;A_EXTRA_BEDS=rooms.reduce((s,r)=>{const o=guests.filter(g=>g.room===r.id).length;return s+Math.max(0,o-2);},0);if(typeof render==="function")render();}
 function renderRooms(){
@@ -1386,9 +1521,34 @@ document.getElementById('pane-guests').addEventListener('click',e=>{const b=e.ta
   else if(a==='remove'){guests=guests.filter(x=>x.id!==id);deleteGuest(id);}
   else return;
   renderGuests();renderRooms();});
-document.getElementById('pane-guests').addEventListener('input',e=>{const id=Number(e.target.dataset.id);const g=guests.find(x=>x.id===id);if(!g)return;if(e.target.classList.contains('gname'))g.name=e.target.value;else if(e.target.classList.contains('gemail'))g.email=e.target.value;else if(e.target.classList.contains('gnote'))g.note=e.target.value;});
-document.getElementById('pane-guests').addEventListener('change',e=>{if(e.target.classList.contains('gname')||e.target.classList.contains('gemail')||e.target.classList.contains('gnote')){const id=Number(e.target.dataset.id),g=guests.find(x=>x.id===id);if(g)saveGuest(g);renderRooms();}});
-function addGuest(){const i=document.getElementById('newguest'),n=i.value.trim();if(!n)return;const id=guests.reduce((m,g)=>Math.max(m,g.id),0)+1;const ng={id,name:n,status:'likely',family:false,bridal:false,room:null};guests.push(ng);i.value='';saveGuest(ng);renderGuests();renderRooms();}
+document.getElementById('pane-guests').addEventListener('input',e=>{
+  if (e.target.id === 'gsearch'){ _guestSearch = e.target.value; renderGuests(); return; }
+  const id=Number(e.target.dataset.id);const g=guests.find(x=>x.id===id);if(!g)return;
+  if(e.target.classList.contains('gname'))g.name=e.target.value;
+  else if(e.target.classList.contains('gemail'))g.email=e.target.value;
+  else if(e.target.classList.contains('gnote'))g.note=e.target.value;
+  else if(e.target.classList.contains('gallergy'))g.dietary_notes=e.target.value;
+});
+document.getElementById('pane-guests').addEventListener('change',e=>{
+  const id=Number(e.target.dataset.id);const g=guests.find(x=>x.id===id);
+  if(e.target.classList.contains('gname')||e.target.classList.contains('gemail')||e.target.classList.contains('gnote')||e.target.classList.contains('gallergy')){
+    if(g)saveGuest(g);renderRooms();return;
+  }
+  if(e.target.classList.contains('gdietsel')){
+    if(g){g.dietary=e.target.value;saveGuest(g);}return;
+  }
+  if(e.target.classList.contains('gcheck')){
+    const pipe=e.target.dataset.pipe;
+    if(g){g[pipe]=e.target.checked;saveGuest(g);renderGuests();}return;
+  }
+});
+document.getElementById('gfilters').addEventListener('click',e=>{
+  const chip=e.target.closest('[data-gfilter]');if(!chip)return;
+  _guestFilter=chip.dataset.gfilter;
+  document.querySelectorAll('#gfilters .gchip').forEach(c=>c.classList.toggle('active',c===chip));
+  renderGuests();
+});
+function addGuest(){const i=document.getElementById('newguest'),n=i.value.trim();if(!n)return;const id=guests.reduce((m,g)=>Math.max(m,g.id),0)+1;const ng={id,name:n,status:'likely',family:false,bridal:false,room:null,dietary:'none',dietary_notes:'',std_sent:false,invite_sent:false,rsvp_received:false};guests.push(ng);i.value='';saveGuest(ng);renderGuests();renderRooms();}
 document.getElementById('addguest').addEventListener('click',addGuest);
 document.getElementById('newguest').addEventListener('keydown',e=>{if(e.key==='Enter')addGuest();});
 document.getElementById('applybtn').addEventListener('click',()=>{const l=guests.filter(g=>g.status==='likely').length;state.guests=Math.max(30,Math.min(130,l));render();saveSettings();document.querySelector('.tab[data-tab="budget"]').click();window.scrollTo({top:0,behavior:'smooth'});});
@@ -1774,6 +1934,31 @@ function allCategories(){
   (state.customCategories || []).forEach(c => seen.add(c));
   return Array.from(seen);
 }
+function renderVendorPayments(v){
+  const row = (kind, label) => {
+    const amt = v[kind+'_amount'];
+    const curr = v[kind+'_currency'] || 'EUR';
+    const due = v[kind+'_due'] || '';
+    const paid = !!v[kind+'_paid'];
+    return '<div class="vpay-row' + (paid?' paid':'') + '">' +
+      '<label class="vpay-check"><input type="checkbox" data-vpayp="'+kind+'" data-vid="'+v.id+'"'+(paid?' checked':'')+'></label>' +
+      '<span class="vpay-label">'+label+'</span>' +
+      '<div class="vpay-amt-wrap">' +
+        '<select class="vpay-curr" data-vpayfield="'+kind+'_currency" data-vid="'+v.id+'">' +
+          '<option value="EUR"'+(curr==='EUR'?' selected':'')+'>€</option>' +
+          '<option value="USD"'+(curr==='USD'?' selected':'')+'>$</option>' +
+        '</select>' +
+        '<input type="number" step="0.01" class="vpay-amt" data-vpayfield="'+kind+'_amount" data-vid="'+v.id+'" placeholder="amount" value="'+(amt!=null?amt:'')+'">' +
+      '</div>' +
+      '<input type="date" class="vpay-due" data-vpayfield="'+kind+'_due" data-vid="'+v.id+'" value="'+esc(due)+'" title="Due date">' +
+    '</div>';
+  };
+  return '<details class="vpay"' + (v.deposit_amount || v.balance_amount ? ' open' : '') + '>' +
+    '<summary>Payment schedule</summary>' +
+    row('deposit','Deposit') +
+    row('balance','Balance') +
+  '</details>';
+}
 function renderVendors(){
   renderHome();
   const total = vendorsCatalog.length;
@@ -1799,6 +1984,7 @@ function renderVendors(){
           '<button class="mini' + (cur==='booked'?' on-vbook':'') + '" data-vact="status" data-vid="' + v.id + '" data-val="booked">Booked</button>' +
         '</div>' +
         '<textarea class="vnotes" data-vid="' + v.id + '" placeholder="Notes — quote, availability, vibe…">' + esc(v.notes||'') + '</textarea>' +
+        renderVendorPayments(v) +
       '</div>';
     }).join('') || '<div class="vcat-empty">No vendors here yet. Use + Add vendor above.</div>';
     return '<div class="vgroup">' +
@@ -1910,13 +2096,27 @@ document.getElementById('pane-vendors').addEventListener('input', e => {
   if (e.target.classList.contains('vnotes')) {
     const v = vendorsCatalog.find(x => x.id === e.target.dataset.vid);
     if (v) v.notes = e.target.value;
+    return;
+  }
+  const pf = e.target.dataset.vpayfield;
+  if (pf) {
+    const v = vendorsCatalog.find(x => x.id === e.target.dataset.vid);
+    if (!v) return;
+    if (pf.endsWith('_amount')) v[pf] = e.target.value === '' ? null : Number(e.target.value);
+    else v[pf] = e.target.value;
   }
 });
 document.getElementById('pane-vendors').addEventListener('change', e => {
-  if (e.target.classList.contains('vnotes')) {
-    const v = vendorsCatalog.find(x => x.id === e.target.dataset.vid);
-    if (v) saveVendor(v);
+  const v = vendorsCatalog.find(x => x.id === e.target.dataset.vid);
+  if (!v) return;
+  if (e.target.classList.contains('vnotes')) { saveVendor(v); return; }
+  if (e.target.dataset.vpayp) {
+    v[e.target.dataset.vpayp+'_paid'] = e.target.checked;
+    saveVendor(v);
+    renderVendors();
+    return;
   }
+  if (e.target.dataset.vpayfield) { saveVendor(v); return; }
 });
 
 

@@ -16,15 +16,17 @@ create table if not exists line_items (
   category     text,                    -- vendor id ('photo', 'planner', …), 'venue', or 'other'
   paid_by      text,                    -- 'brian' | 'claudia' | 'other'
   paid_by_name text,                    -- optional name when paid_by='other'
+  solo         boolean not null default false, -- true = personal, not part of the 50/50 split
   spent_on     date,
   notes        text,
   position     int,
   created_at   timestamptz not null default now()
 );
 
--- Idempotent add for people who ran an earlier version of this migration
--- before the currency column existed. Safe to run any number of times.
+-- Idempotent adds for people who ran an earlier version of this migration.
+-- Safe to run any number of times.
 alter table line_items add column if not exists currency text not null default 'EUR';
+alter table line_items add column if not exists solo boolean not null default false;
 
 alter table line_items enable row level security;
 

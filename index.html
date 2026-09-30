@@ -264,6 +264,10 @@
   .acat-bd{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);font-weight:400}
   .acat-usd{font-family:var(--mono);font-size:10px;color:var(--ink-soft);font-weight:400;opacity:.85}
   .asum-fx{margin-top:10px;padding-top:8px;border-top:1px dotted var(--line);font-family:var(--mono);font-size:10px;color:var(--ink-soft);letter-spacing:.04em;opacity:.7;text-align:right}
+  .line-solo{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sky);background:var(--sky-pale);padding:2px 6px;border-radius:4px;margin-left:8px;vertical-align:middle}
+  .line-row.solo .line-name{color:var(--ink-soft)}
+  .af-solo{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);cursor:pointer;padding:4px 2px 6px}
+  .af-solo input[type=checkbox]{width:16px;height:16px;margin:0;padding:0;flex-shrink:0;accent-color:var(--sky)}
 
   /* Vendor tab: add-forms, delete buttons, empty categories */
   .vform{background:var(--surface);border:1px solid var(--brass);border-radius:12px;padding:14px 14px 12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 14px rgba(184,143,90,.12)}
@@ -790,6 +794,7 @@ async function saveLineItem(item) {
     category: item.category || null,
     paid_by: item.paid_by || null,
     paid_by_name: item.paid_by_name || null,
+    solo: !!item.solo,
     spent_on: item.spent_on || null,
     notes: item.notes || null
   };
@@ -1260,6 +1265,7 @@ async function hydrate(){
         id:x.id, label:x.label, amount:Number(x.amount||0),
         currency: x.currency || 'EUR',
         category:x.category, paid_by:x.paid_by, paid_by_name:x.paid_by_name,
+        solo: !!x.solo,
         spent_on:x.spent_on, notes:x.notes
       }));
     }
@@ -2064,16 +2070,25 @@ function paidByLabel(i){
   return '—';
 }
 function actualsSettlement(){
-  // Everything converted to USD for the split math (real dollars out of pocket).
-  const sumUsd = filter => lineItems.filter(filter).reduce((s,i) => s + toUsd(Number(i.amount||0), i.currency), 0);
-  const totalUsd       = sumUsd(() => true);
-  const otherContribUsd= sumUsd(i => i.paid_by === 'other');
-  const brianPaidUsd   = sumUsd(i => i.paid_by === 'brian');
-  const claudiaPaidUsd = sumUsd(i => i.paid_by === 'claudia');
-  const netCost        = Math.max(0, totalUsd - otherContribUsd);
+  // Solo items are 100% personal — they don't enter the 50/50 split.
+  const joint = lineItems.filter(i => !i.solo);
+  const solo  = lineItems.filter(i => i.solo);
+  const sumUsd = arr => arr.reduce((s,i) => s + toUsd(Number(i.amount||0), i.currency), 0);
+  const sumUsdBy = (arr, key) => sumUsd(arr.filter(i => i.paid_by === key));
+
+  const allTotalUsd    = sumUsd(lineItems);
+  const soloTotalUsd   = sumUsd(solo);
+  const jointTotalUsd  = sumUsd(joint);
+  const otherContribUsd= sumUsdBy(joint, 'other');
+  const brianPaidUsd   = sumUsdBy(joint, 'brian');
+  const claudiaPaidUsd = sumUsdBy(joint, 'claudia');
+  const netCost        = Math.max(0, jointTotalUsd - otherContribUsd);
   const share          = netCost / 2;
-  return {totalUsd, otherContribUsd, brianPaidUsd, claudiaPaidUsd, netCost, share,
-          brianDelta: brianPaidUsd - share, claudiaDelta: claudiaPaidUsd - share};
+  return {
+    allTotalUsd, soloTotalUsd, jointTotalUsd,
+    otherContribUsd, brianPaidUsd, claudiaPaidUsd, netCost, share,
+    brianDelta: brianPaidUsd - share, claudiaDelta: claudiaPaidUsd - share
+  };
 }
 
 function renderActuals(){
@@ -2082,7 +2097,7 @@ function renderActuals(){
   if (typeof renderHome === 'function') renderHome();
 
   const s = actualsSettlement();
-  document.getElementById('asum').innerHTML = lineItems.length + ' expense' + (lineItems.length===1?'':'s') + ' &middot; <b>' + usdFmt(s.totalUsd) + '</b> spent (USD)';
+  document.getElementById('asum').innerHTML = lineItems.length + ' expense' + (lineItems.length===1?'':'s') + ' &middot; <b>' + usdFmt(s.allTotalUsd) + '</b> spent (USD)';
 
   // status lines
   const statusLine = (delta) => {
@@ -2106,7 +2121,8 @@ function renderActuals(){
 
   document.getElementById('asummary').innerHTML =
     '<div class="asum-card">' +
-      '<div class="asum-row"><span>Total spent</span><span class="amt">' + usdFmt(s.totalUsd) + '</span></div>' +
+      '<div class="asum-row"><span>Total spent</span><span class="amt">' + usdFmt(s.allTotalUsd) + '</span></div>' +
+      (s.soloTotalUsd > 0 ? '<div class="asum-row credit"><span>Personal (not split)</span><span class="amt">−' + usdFmt(s.soloTotalUsd) + '</span></div>' : '') +
       (s.otherContribUsd > 0 ? '<div class="asum-row credit"><span>Contributions from others</span><span class="amt">−' + usdFmt(s.otherContribUsd) + '</span></div>' : '') +
       '<div class="asum-row asum-total"><span>To split 50 / 50</span><span class="amt">' + usdFmt(s.netCost) + '</span></div>' +
       '<div class="asum-people">' +
@@ -2160,8 +2176,9 @@ function renderActuals(){
       const usdEquiv = i.currency === 'EUR'
         ? '<div class="line-usd">≈ ' + usdFmt(toUsd(Number(i.amount||0), 'EUR')) + '</div>'
         : '';
-      return '<div class="line-row">' +
-        '<div class="line-name">' + esc(i.label) + '</div>' +
+      const soloTag = i.solo ? '<span class="line-solo">Personal</span>' : '';
+      return '<div class="line-row' + (i.solo ? ' solo' : '') + '">' +
+        '<div class="line-name">' + esc(i.label) + soloTag + '</div>' +
         '<div class="line-meta">' + esc(paidByLabel(i)) + '</div>' +
         '<div class="line-amt-wrap"><div class="line-amt">' + native + '</div>' + usdEquiv + '</div>' +
         '<button class="line-del" data-lidel="' + i.id + '" aria-label="Delete">×</button>' +
@@ -2205,6 +2222,7 @@ function openAddExpenseForm(){
         '<label class="af-pb"><input type="radio" name="af-paidby" value="other"> Other</label>' +
       '</div>' +
       '<input id="af-othername" placeholder="Contributor name" style="display:none" autocomplete="off">' +
+      '<label class="af-solo"><input type="checkbox" id="af-solo"> <span>Personal — not split (100% theirs)</span></label>' +
       '<div class="vform-actions"><button class="btn" id="af-save">Save expense</button><button class="btn ghost" id="af-cancel">Cancel</button></div>' +
     '</div>';
   setTimeout(() => document.getElementById('af-label').focus(), 50);
@@ -2223,15 +2241,17 @@ document.getElementById('aform-slot').addEventListener('click', async e => {
     const paidByEl = document.querySelector('input[name="af-paidby"]:checked');
     const paid_by = paidByEl ? paidByEl.value : null;
     const paid_by_name = document.getElementById('af-othername').value.trim() || null;
+    const solo = document.getElementById('af-solo').checked;
     if (!label) { alert('Description required'); return; }
     if (!amount || amount <= 0) { alert('Amount required'); return; }
     if (paid_by === 'other' && !paid_by_name) { alert('Name required for "Other" contributors'); return; }
-    const saved = await saveLineItem({label, amount, currency, category, paid_by, paid_by_name});
+    const saved = await saveLineItem({label, amount, currency, category, paid_by, paid_by_name, solo});
     if (saved) {
       lineItems.unshift({
         id: saved.id, label: saved.label, amount: Number(saved.amount||0),
         currency: saved.currency || 'EUR',
         category: saved.category, paid_by: saved.paid_by, paid_by_name: saved.paid_by_name,
+        solo: !!saved.solo,
         spent_on: saved.spent_on, notes: saved.notes
       });
       document.getElementById('aform-slot').innerHTML = '';

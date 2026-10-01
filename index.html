@@ -2049,10 +2049,15 @@ function generateVendorId(category, name){
   return id;
 }
 function allCategories(){
-  const seen = new Set();
-  vendorsCatalog.forEach(v => seen.add(v.category));
-  (state.customCategories || []).forEach(c => seen.add(c));
-  return Array.from(seen);
+  // Budget-tab slider labels come first (in their defined order), always
+  // visible even if no vendors are in them yet. Then any orphan DB
+  // categories, then user-added custom categories.
+  const budgetLabels = VENDORS.map(v => v.label);
+  const used = new Set();
+  vendorsCatalog.forEach(v => used.add(v.category));
+  (state.customCategories || []).forEach(c => used.add(c));
+  budgetLabels.forEach(l => used.delete(l));
+  return [...budgetLabels, ...Array.from(used)];
 }
 function renderVendorPayments(v){
   const row = (kind, label) => {

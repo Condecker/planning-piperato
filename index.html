@@ -398,9 +398,9 @@
   body.view-only .vpay-check input,
   body.view-only input[type=range],body.view-only input[type=checkbox],body.view-only input[type=radio],
   body.view-only .radd,body.view-only .stadd,
-  body.view-only .seat,body.view-only .up-chip,
-  body.view-only .homecard{pointer-events:none}
-  body.view-only .homecard{cursor:default}
+  body.view-only .seat,body.view-only .up-chip{pointer-events:none}
+  body.view-only .occ button{display:none !important}
+  body.view-only .homecard[data-gohome="notes"]{display:none}
 
   /* Text inputs become read-only lookalikes (except search + currency toggle) */
   body.view-only input[type=text],body.view-only input[type=email],body.view-only input[type=number],body.view-only input[type=date],body.view-only input[type=password],body.view-only textarea{pointer-events:none;background:transparent;border-color:transparent}

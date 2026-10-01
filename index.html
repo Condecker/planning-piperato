@@ -356,6 +356,60 @@
   .notecard .ndel{position:absolute;top:6px;right:6px;border:none;background:transparent;color:var(--ink-soft);font-size:17px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px}
   .notecard .ndel:hover{color:var(--clay)}
 
+  /* ─── View-only mode ─── */
+  .auth-divider{display:flex;align-items:center;gap:8px;margin:14px 0 2px;color:var(--ink-soft);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+  .auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .viewonly-btn{margin-top:8px;width:100%;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:11px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink-soft);cursor:pointer;transition:all .15s ease}
+  .viewonly-btn:hover{color:var(--sky);border-color:var(--sky);background:var(--sky-pale)}
+  #viewonly-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:90;background:var(--sky-pale);color:var(--sky);border-bottom:1px solid var(--sky);font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;text-align:center;padding:7px 12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:14px}
+  #viewonly-banner span{color:var(--sky)}
+  #viewonly-banner a{color:var(--brass);text-decoration:underline;letter-spacing:.1em}
+  body.view-only #viewonly-banner{display:flex}
+  body.view-only{padding-top:36px}
+
+  /* Hide every write affordance when in view-only */
+  body.view-only #signout,
+  body.view-only #addguest,#body.view-only #newguest,
+  body.view-only #addroom,body.view-only #autofill,
+  body.view-only #addtable,body.view-only #autoseat,
+  body.view-only #addtask,body.view-only #newtask,body.view-only #newtaskdate,
+  body.view-only #addnote,body.view-only #newnote,body.view-only .ncompose,
+  body.view-only #vaddvendor,body.view-only #vaddcategory,
+  body.view-only #aaddline,
+  body.view-only #applybtn,body.view-only #dlcsv,
+  body.view-only .seat-unseat,
+  body.view-only .gx,body.view-only .rx,
+  body.view-only .ndel,body.view-only .tdel,
+  body.view-only .vcard-del,body.view-only .vcat-del,
+  body.view-only .line-del,
+  body.view-only [data-act="remove"],
+  body.view-only [data-sact="table-remove"],
+  body.view-only [data-vdel],body.view-only [data-catdel],
+  body.view-only [data-ck="del"],
+  body.view-only [data-tl="del"],body.view-only [data-tl="add"],
+  body.view-only [data-lidel],
+  body.view-only [data-unseat-gid],
+  body.view-only .vpay summary,
+  body.view-only .cap button{display:none !important}
+
+  /* Make still-visible interactive things non-interactive */
+  body.view-only .mini,body.view-only .chip,
+  body.view-only .gcheck,body.view-only .paychk,body.view-only .tcheck,
+  body.view-only .vpay-check input,
+  body.view-only input[type=range],body.view-only input[type=checkbox],body.view-only input[type=radio],
+  body.view-only .radd,body.view-only .stadd,
+  body.view-only .seat,body.view-only .up-chip,
+  body.view-only .homecard{pointer-events:none}
+  body.view-only .homecard{cursor:default}
+
+  /* Text inputs become read-only lookalikes (except search + currency toggle) */
+  body.view-only input[type=text],body.view-only input[type=email],body.view-only input[type=number],body.view-only input[type=date],body.view-only input[type=password],body.view-only textarea{pointer-events:none;background:transparent;border-color:transparent}
+  body.view-only #gsearch{pointer-events:auto;background:var(--surface);border-color:var(--line)}
+  body.view-only #fxtoggle,body.view-only .gchip,body.view-only .tab{pointer-events:auto}
+  body.view-only .vpay{border-top:none;padding-top:0;margin-top:0}
+  body.view-only .vpay[open]>summary,body.view-only .vpay>summary{display:none}
+  body.view-only #field-fireworks{display:none !important}
+
   /* ─── Auth gate ─── */
   #authgate{position:fixed;inset:0;background:rgba(38,43,35,.72);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
   #authgate .card{background:var(--surface);border-radius:16px;padding:28px 26px;max-width:340px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25)}
@@ -434,7 +488,13 @@
       <div id="autherr"></div>
       <button type="submit">Sign in</button>
     </form>
+    <div class="auth-divider"><span>or</span></div>
+    <button type="button" id="viewonly" class="viewonly-btn">View only &middot; no login needed</button>
   </div>
+</div>
+<div id="viewonly-banner">
+  <span>VIEW ONLY</span>
+  <a href="#" id="viewonly-signin">sign in to edit</a>
 </div>
 
 <div id="seat-modal" class="seat-modal" role="dialog" aria-modal="true">
@@ -559,7 +619,7 @@
     <div class="chips" data-group="rum"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€600 ≤80</span></button></div></div>
   <div class="field"><div class="flab"><span>Prosecco tower</span></div>
     <div class="chips" data-group="prosecco"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€300</span></button></div></div>
-  <div class="field"><div class="flab"><span>Fireworks show (1m30s)</span></div>
+  <div class="field" id="field-fireworks"><div class="flab"><span>Fireworks show (1m30s)</span></div>
     <div class="chips" data-group="fireworks"><button class="chip" data-value="off">No</button><button class="chip" data-value="on">Add<span class="x">€400</span></button></div></div>
   <div class="field"><div class="flab"><span>Children (kids menu)</span><span class="v" id="kidsval">0 kids</span></div>
     <input type="range" id="kids" min="0" max="20" step="1" value="0"></div>
@@ -751,6 +811,7 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const _dbErr = op => ({error}) => { if (error) console.warn('[db]', op, error.message||error); };
 
 function saveGuest(g) {
+  if (_viewOnly) return;
   db.from('guests').upsert({
     id: g.id, name: g.name, status: g.status,
     family: !!g.family, bridal: !!g.bridal,
@@ -763,9 +824,11 @@ function saveGuest(g) {
   }).then(_dbErr('saveGuest'));
 }
 function deleteGuest(id) {
+  if (_viewOnly) return;
   db.from('guests').delete().eq('id', id).then(_dbErr('deleteGuest'));
 }
 function saveRoom(r) {
+  if (_viewOnly) return;
   db.from('rooms').upsert({
     id: r.id, name: r.name, cap: r.cap,
     category: r.cat ?? null, features: r.feat ?? null,
@@ -773,17 +836,21 @@ function saveRoom(r) {
   }).then(_dbErr('saveRoom'));
 }
 function deleteRoom(id) {
+  if (_viewOnly) return;
   db.from('rooms').delete().eq('id', id).then(_dbErr('deleteRoom'));
 }
 function saveDinnerTable(t) {
+  if (_viewOnly) return;
   db.from('dinner_tables').upsert({
     id: t.id, name: t.name, seats: t.seats, position: dinnerTables.indexOf(t)
   }).then(_dbErr('saveDinnerTable'));
 }
 function deleteDinnerTable(id) {
+  if (_viewOnly) return;
   db.from('dinner_tables').delete().eq('id', id).then(_dbErr('deleteDinnerTable'));
 }
 function saveVendor(v) {
+  if (_viewOnly) return;
   db.from('vendors').upsert({
     id: v.id, category: v.category ?? null, name: v.name ?? null, contact: v.contact ?? null,
     status: v.status || '', notes: v.notes || '',
@@ -798,9 +865,11 @@ function saveVendor(v) {
   }).then(_dbErr('saveVendor'));
 }
 function deleteVendor(id) {
+  if (_viewOnly) return;
   db.from('vendors').delete().eq('id', id).then(_dbErr('deleteVendor'));
 }
 function saveTask(t) {
+  if (_viewOnly) return;
   db.from('tasks').upsert({
     id: t.id, label: t.text,
     before_days: t.before ?? null,
@@ -809,12 +878,15 @@ function saveTask(t) {
   }).then(_dbErr('saveTask'));
 }
 function deleteTask(id) {
+  if (_viewOnly) return;
   db.from('tasks').delete().eq('id', id).then(_dbErr('deleteTask'));
 }
 function saveTimelineDay(day_id, label, position) {
+  if (_viewOnly) return;
   db.from('timeline_days').upsert({ id: day_id, label, position }).then(_dbErr('saveTimelineDay'));
 }
 async function insertTimelineItem(day_id, item, position) {
+  if (_viewOnly) return null;
   const { data, error } = await db.from('timeline_items')
     .insert({ day_id, time_label: item.time || '', activity: item.act || '', position })
     .select().single();
@@ -822,18 +894,22 @@ async function insertTimelineItem(day_id, item, position) {
   return data.id;
 }
 function saveTimelineItem(item, day_id, position) {
+  if (_viewOnly) return;
   if (item.row_id == null) return;
   db.from('timeline_items').update({
     day_id, time_label: item.time || '', activity: item.act || '', position
   }).eq('id', item.row_id).then(_dbErr('saveTimelineItem'));
 }
 function deleteTimelineItem(row_id) {
+  if (_viewOnly) return;
   db.from('timeline_items').delete().eq('id', row_id).then(_dbErr('deleteTimelineItem'));
 }
 function savePayment(key) {
+  if (_viewOnly) return;
   db.from('payments').upsert({ key, paid: !!payState[key] }).then(_dbErr('savePayment'));
 }
 async function saveNote(body) {
+  if (_viewOnly) return null;
   const { data, error } = await db.from('notes').insert({
     body, author_email: _me?.email ?? null, author_id: _me?.id ?? null
   }).select().single();
@@ -841,9 +917,11 @@ async function saveNote(body) {
   return data;
 }
 function deleteNote(id) {
+  if (_viewOnly) return;
   db.from('notes').delete().eq('id', id).then(_dbErr('deleteNote'));
 }
 async function saveLineItem(item) {
+  if (_viewOnly) return null;
   const payload = {
     label: item.label,
     amount: Number(item.amount) || 0,
@@ -867,10 +945,12 @@ async function saveLineItem(item) {
   }
 }
 function deleteLineItem(id) {
+  if (_viewOnly) return;
   db.from('line_items').delete().eq('id', id).then(_dbErr('deleteLineItem'));
 }
 let _saveSettingsT = null;
 function saveSettings() {
+  if (_viewOnly) return;
   clearTimeout(_saveSettingsT);
   _saveSettingsT = setTimeout(() => {
     db.from('settings').upsert({ id: 1, data: state }).then(_dbErr('saveSettings'));
@@ -878,6 +958,7 @@ function saveSettings() {
 }
 
 let _fxRate = null;  // populated by loadFxRate(); EUR→USD conversion rate
+let _viewOnly = false; // true when user clicked "View only" or ?#view hash
 const eur = n => {
   if (state && state.currency === 'USD' && _fxRate) return '$' + Math.round(n * _fxRate).toLocaleString('en-US');
   return '€' + Math.round(n).toLocaleString('en-US');
@@ -974,7 +1055,7 @@ function compute(){
   if(state.icecream==='on')ex.push({l:'Ice cream cart',d:'≤80 guests',amt:500+Math.max(0,g-80)*4});
   if(state.rum==='on')ex.push({l:'Rum, cigars & chocolate',d:'≤80 guests',amt:600+Math.max(0,g-80)*4});
   if(state.prosecco==='on')ex.push({l:'Prosecco tower',d:'4 bottles',amt:300});
-  if(state.fireworks==='on')ex.push({l:'Fireworks show',d:'1m30s · flat',amt:400});
+  if(state.fireworks==='on')ex.push({l:_viewOnly?'Day-of extras':'Fireworks show',d:_viewOnly?'surprise · flat':'1m30s · flat',amt:400});
   if(state.kids>0)ex.push({l:'Kids menu',d:state.kids+' × €80',amt:state.kids*80});
   const ven=Math.round(4*0.5*rate);
   const exBeds=A_EXTRA_BEDS,exBedCost=exBeds*50*3,roomTotal=rm.total+exBedCost;
@@ -1373,9 +1454,12 @@ function unsubscribeRealtime() {
 
 /* Auth gate: block the app until sign-in, then hydrate + subscribe. */
 async function initAuth() {
+  // If URL hash is #view, enter view-only right away without checking session.
+  if (location.hash === '#view') { enterViewOnly(); return; }
   const { data:{ session } } = await db.auth.getSession();
   if (session) unlockApp(); else showAuthGate();
   db.auth.onAuthStateChange((_evt, sess) => {
+    if (_viewOnly) return;
     if (sess) unlockApp(); else showAuthGate();
   });
 }
@@ -1387,10 +1471,21 @@ function showAuthGate() {
 async function unlockApp() {
   const { data:{ session } } = await db.auth.getSession();
   _me = session?.user ? { id: session.user.id, email: session.user.email } : null;
+  _viewOnly = false;
+  document.body.classList.remove('view-only');
   document.getElementById('authgate').style.display = 'none';
   document.getElementById('signout').style.display = 'block';
   hydrate();
   subscribeRealtime();
+}
+function enterViewOnly() {
+  _viewOnly = true;
+  _me = null;
+  document.body.classList.add('view-only');
+  document.getElementById('authgate').style.display = 'none';
+  document.getElementById('signout').style.display = 'none';
+  hydrate();
+  subscribeRealtime(); // reads are fine; writes already guarded
 }
 document.getElementById('authform').addEventListener('submit', async e => {
   e.preventDefault();
@@ -1403,6 +1498,17 @@ document.getElementById('authform').addEventListener('submit', async e => {
 });
 document.getElementById('signout').addEventListener('click', async () => {
   await db.auth.signOut();
+  location.reload();
+});
+document.getElementById('viewonly').addEventListener('click', () => {
+  if (location.hash !== '#view') history.replaceState(null, '', location.pathname + '#view');
+  enterViewOnly();
+});
+document.getElementById('viewonly-signin').addEventListener('click', e => {
+  e.preventDefault();
+  history.replaceState(null, '', location.pathname);
+  _viewOnly = false;
+  document.body.classList.remove('view-only');
   location.reload();
 });
 

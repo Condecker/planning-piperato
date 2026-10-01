@@ -410,6 +410,7 @@
   body.view-only .vpay[open]>summary,body.view-only .vpay>summary{display:none}
   body.view-only #field-fireworks{display:none !important}
   body.view-only #fxtoggle{display:none}
+  body.view-only .tab[data-tab="notes"],body.view-only #pane-notes{display:none !important}
 
   /* ─── Auth gate ─── */
   #authgate{position:fixed;inset:0;background:rgba(38,43,35,.72);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
@@ -1488,6 +1489,9 @@ function enterViewOnly() {
   document.body.classList.add('view-only');
   document.getElementById('authgate').style.display = 'none';
   document.getElementById('signout').style.display = 'none';
+  // Snap to Home in case the previous session had Notes (now hidden) active.
+  const homeTab = document.querySelector('.tab[data-tab="home"]');
+  if (homeTab && !homeTab.classList.contains('active')) homeTab.click();
   // Make sure the FX rate is loaded so eur() can convert to USD on first paint.
   loadFxRate().then(() => {
     hydrate();

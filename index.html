@@ -409,6 +409,7 @@
   body.view-only .vpay{border-top:none;padding-top:0;margin-top:0}
   body.view-only .vpay[open]>summary,body.view-only .vpay>summary{display:none}
   body.view-only #field-fireworks{display:none !important}
+  body.view-only #fxtoggle{display:none}
 
   /* ─── Auth gate ─── */
   #authgate{position:fixed;inset:0;background:rgba(38,43,35,.72);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
@@ -960,7 +961,10 @@ function saveSettings() {
 let _fxRate = null;  // populated by loadFxRate(); EUR→USD conversion rate
 let _viewOnly = false; // true when user clicked "View only" or ?#view hash
 const eur = n => {
-  if (state && state.currency === 'USD' && _fxRate) return '$' + Math.round(n * _fxRate).toLocaleString('en-US');
+  // View-only mode always shows USD when FX rate is available (shared viewers
+  // generally think in dollars). Otherwise honor the toggle.
+  const useUsd = ((_viewOnly || (state && state.currency === 'USD')) && _fxRate);
+  if (useUsd) return '$' + Math.round(n * _fxRate).toLocaleString('en-US');
   return '€' + Math.round(n).toLocaleString('en-US');
 };
 async function loadFxRate() {
@@ -1484,7 +1488,10 @@ function enterViewOnly() {
   document.body.classList.add('view-only');
   document.getElementById('authgate').style.display = 'none';
   document.getElementById('signout').style.display = 'none';
-  hydrate();
+  // Make sure the FX rate is loaded so eur() can convert to USD on first paint.
+  loadFxRate().then(() => {
+    hydrate();
+  });
   subscribeRealtime(); // reads are fine; writes already guarded
 }
 document.getElementById('authform').addEventListener('submit', async e => {

@@ -1506,10 +1506,13 @@ document.getElementById('viewonly').addEventListener('click', () => {
 });
 document.getElementById('viewonly-signin').addEventListener('click', e => {
   e.preventDefault();
-  history.replaceState(null, '', location.pathname);
+  e.stopPropagation();
   _viewOnly = false;
   document.body.classList.remove('view-only');
-  location.reload();
+  try { history.replaceState(null, '', location.pathname + location.search); } catch(_) {}
+  unsubscribeRealtime();
+  document.getElementById('authgate').style.display = 'flex';
+  setTimeout(() => { const i = document.getElementById('authemail'); if (i) i.focus(); }, 60);
 });
 
 function renderGuests(){
